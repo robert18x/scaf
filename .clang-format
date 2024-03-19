@@ -1,0 +1,22 @@
+---
+BasedOnStyle: Google
+AccessModifierOffset: '-4'
+# AlignAfterOpenBracket: Align
+AlignConsecutiveMacros: 'true'
+AlignTrailingComments: 'true'
+AllowAllArgumentsOnNextLine: 'true'
+AllowAllParametersOfDeclarationOnNextLine: 'true'
+AllowShortFunctionsOnASingleLine: Empty
+# ArrayInitializerAlignmentStyle: Right
+AllowShortLambdasOnASingleLine: All
+ColumnLimit: '160'
+Cpp11BracedListStyle: 'true'
+FixNamespaceComments: 'false'
+IndentWidth: '4'
+Language: Cpp
+Standard: c++20
+TabWidth: '4'
+# OperandAlignmentStyle: 'BreakBeforeBinaryOperators'
+# IncludeBlocksStyle: Regroup
+
+...
