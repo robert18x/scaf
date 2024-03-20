@@ -57,7 +57,7 @@ enum class Performative {
     Accept_Proposal,
     Agree,
     Cancel,
-    Call_for_Proposal,
+    Call_For_Proposal,
     Confirm,
     Disconfirm,
     Failure,
@@ -82,7 +82,7 @@ NLOHMANN_JSON_SERIALIZE_ENUM(Performative, {// clang-format off
     {Performative::Accept_Proposal, "Accept_Proposal"},
     {Performative::Agree, "Agree"},
     {Performative::Cancel, "Cancel"},
-    {Performative::Call_for_Proposal, "Call_for_Proposal"},
+    {Performative::Call_For_Proposal, "Call_For_Proposal"},
     {Performative::Confirm, "Confirm"},
     {Performative::Disconfirm, "Disconfirm"},
     {Performative::Failure, "Failure"},
@@ -296,7 +296,12 @@ protected:
     ConversationHandler<Agent> conversationHandler;
 
 private:
-    virtual std::unique_ptr<_Behaviour> createBehaviour() = 0;
+    std::unique_ptr<_Behaviour> createBehaviour() {
+        static_assert(std::derived_from<typename _Behaviour::Agent, Agent>);
+        auto* agentSpecialization = dynamic_cast<typename _Behaviour::Agent*>(this);
+        assert(agentSpecialization != nullptr);
+        return std::make_unique<_Behaviour>(agentSpecialization);
+    }
 };
 
 template <typename _Agent>
@@ -308,6 +313,7 @@ public:
     virtual void handleMessage(const AclMessage&) = 0;
 
     virtual bool isFinished() = 0;
+    using Agent = _Agent;
 
 protected:
     _Agent* agent;
@@ -345,11 +351,6 @@ public:
 class MyAgent : public scaf::Agent<MyBehaviour<MyAgent>> {
 public:
     explicit MyAgent(const std::string& name) : scaf::Agent<MyBehaviour<MyAgent>>(name) {}
-
-private:
-    std::unique_ptr<MyBehaviour<MyAgent>> createBehaviour() override {
-        return std::make_unique<MyBehaviour<MyAgent>>(this);
-    }
 };
 
 std::unique_ptr<MyAgent> myAgent;
