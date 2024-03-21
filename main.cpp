@@ -54,81 +54,83 @@ struct adl_serializer<std::chrono::time_point<Clock, Duration>> {
 namespace scaf {  // Smart Contracting Agents Framework
 
 enum class Performative {
-    Accept_Proposal,
-    Agree,
-    Cancel,
-    Call_For_Proposal,
-    Confirm,
-    Disconfirm,
-    Failure,
-    Inform,
-    Inform_If,
-    Inform_Ref,
-    Not_Understood,
-    Propagate,
-    Propose,
-    Proxy,
-    Query_If,
-    Query_Ref,
-    Refuse,
-    Reject_Proposal,
-    Request,
-    Request_When,
-    Request_Whenever,
-    Subscribe,
+    accept_proposal,
+    agree,
+    cancel,
+    call_for_proposal,
+    confirm,
+    disconfirm,
+    failure,
+    inform,
+    inform_if,
+    inform_ref,
+    not_understood,
+    propagate,
+    propose,
+    proxy,
+    query_if,
+    query_ref,
+    refuse,
+    reject_proposal,
+    request,
+    request_when,
+    request_whenever,
+    subscribe,
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(Performative, {// clang-format off
-    {Performative::Accept_Proposal, "Accept_Proposal"},
-    {Performative::Agree, "Agree"},
-    {Performative::Cancel, "Cancel"},
-    {Performative::Call_For_Proposal, "Call_For_Proposal"},
-    {Performative::Confirm, "Confirm"},
-    {Performative::Disconfirm, "Disconfirm"},
-    {Performative::Failure, "Failure"},
-    {Performative::Inform, "Inform"},
-    {Performative::Inform_If, "Inform_If"},
-    {Performative::Inform_Ref, "Inform_Ref"},
-    {Performative::Not_Understood, "Not_Understood"},
-    {Performative::Propagate, "Propagate"},
-    {Performative::Propose, "Propose"},
-    {Performative::Proxy, "Proxy"},
-    {Performative::Query_If, "Query_If"},
-    {Performative::Query_Ref, "Query_Ref"},
-    {Performative::Refuse, "Refuse"},
-    {Performative::Reject_Proposal, "Reject_Proposal"},
-    {Performative::Request, "Request"},
-    {Performative::Request_When, "Request_When"},
-    {Performative::Request_Whenever, "Request_Whenever"},
-    {Performative::Subscribe, "Subscribe"}
+    {Performative::accept_proposal, "accept_proposal"},
+    {Performative::agree, "agree"},
+    {Performative::cancel, "cancel"},
+    {Performative::call_for_proposal, "call_for_proposal"},
+    {Performative::confirm, "confirm"},
+    {Performative::disconfirm, "disconfirm"},
+    {Performative::failure, "failure"},
+    {Performative::inform, "inform"},
+    {Performative::inform_if, "inform_if"},
+    {Performative::inform_ref, "inform_ref"},
+    {Performative::not_understood, "not_understood"},
+    {Performative::propagate, "propagate"},
+    {Performative::propose, "propose"},
+    {Performative::proxy, "proxy"},
+    {Performative::query_if, "query_if"},
+    {Performative::query_ref, "query_ref"},
+    {Performative::refuse, "refuse"},
+    {Performative::reject_proposal, "reject_proposal"},
+    {Performative::request, "request"},
+    {Performative::request_when, "request_when"},
+    {Performative::request_whenever, "request_whenever"},
+    {Performative::subscribe, "subscribe"}
 })  // clang-format on
 
 struct AclMessage {
     Performative performative;
-    std::string sender;
+    std::string sender;  // is set automatically, manual setting has no affect
     std::string receiver;
     std::optional<std::string> replayTo = std::nullopt;
     nlohmann::json content;
-    std::string language;
-    std::string encoding;
+    std::string language;  // is set automatically, manual setting has no affect
+    std::string encoding;  // is set automatically, manual setting has no affect
     std::optional<std::string> ontology = std::nullopt;
     std::string protocol;
-    std::uint64_t conversationId;
+    std::uint64_t conversationId;  // is set automatically, manual setting has no affect
     std::optional<std::string> replayWith = std::nullopt;
     std::optional<std::string> inReplayTo = std::nullopt;
     std::optional<std::chrono::system_clock::time_point> replayBy = std::nullopt;
+
+    static_assert(std::is_same_v<decltype(sender), decltype(receiver)>);
 };
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AclMessage, performative, sender, receiver, replayTo, content, language, encoding, ontology, protocol, conversationId,
                                    replayWith, inReplayTo, replayBy);
 
 namespace utils {
-    bool compareStringsLowercase(std::string_view first, std::string_view second) {
-        std::string firstLowercase(first), secondLowercase(second);
-        std::ranges::for_each(firstLowercase, [](char& c){ c = std::tolower(c); });
-        std::ranges::for_each(secondLowercase, [](char& c){ c = std::tolower(c); });
-        return firstLowercase == secondLowercase;
-    }
+bool compareStringsLowercase(std::string_view first, std::string_view second) {
+    std::string firstLowercase(first), secondLowercase(second);
+    std::ranges::for_each(firstLowercase, [](char& c) { c = std::tolower(c); });
+    std::ranges::for_each(secondLowercase, [](char& c) { c = std::tolower(c); });
+    return firstLowercase == secondLowercase;
+}
 }
 
 class ScafError : public std::runtime_error {
@@ -206,23 +208,29 @@ public:
         if (it != activeConversations.end()) {
             handleConversation(it->first, *it->second, message);
         } else {
-            auto conversation = createNewConversation(uid);
-            [[maybe_unused]] auto [iterator, inserted] = activeConversations.emplace(uid, std::move(conversation));
-            assert(inserted == true);
-            handleConversation(uid, *iterator->second, message);
+            Conversation& conversation = createNewConversation(uid);
+            handleConversation(uid, conversation, message);
         }
     }
 
+    std::tuple<std::reference_wrapper<Conversation>, UniqueConversationId> createNewConversation(const decltype(AclMessage::receiver)& receiver) {
+        UniqueConversationId uid = std::make_pair(conversationIdGenerator++, receiver);
+        Conversation& conversation = createNewConversation(uid);
+        return std::make_pair(std::reference_wrapper(conversation), uid);
+    }
+
 private:
-    auto createNewConversation(const UniqueConversationId& uid) {
-        auto behaviour = correspondingAgent->createBehaviour();
-        behaviour->setUid(uid);
-        return behaviour;
+    Conversation& createNewConversation(const UniqueConversationId& uid) {
+        std::unique_ptr<Conversation> conversation = correspondingAgent->createBehaviour();
+        conversation->setUid(uid);
+        [[maybe_unused]] auto [iterator, inserted] = activeConversations.emplace(uid, std::move(conversation));
+        assert(inserted == true);
+        return *iterator->second;
     }
 
     void handleConversation(const UniqueConversationId& uid, Conversation& conversation, const AclMessage& message) {
         try {
-            conversation.handleMessage(message);
+            conversation.handleReceivedMessage(message);
         } catch (...) {  // unhandled exception - invalid conversation
             removeConversation(uid);
         }
@@ -234,6 +242,7 @@ private:
         activeConversations.erase(uid);
     }
 
+    decltype(AclMessage::conversationId) conversationIdGenerator = 0;
     std::map<UniqueConversationId, std::unique_ptr<Conversation>> activeConversations;
     _Agent* correspondingAgent;
 };
@@ -272,35 +281,41 @@ public:
         }
     }
 
-    _CommunicationHandler& getCommunicationHandler() {
-        return communicationHandler;
+    using AgentBehaviour = _Behaviour;
+
+protected:
+    virtual void startConversation(const decltype(AclMessage::receiver)& receiver) {
+        auto[conversation, uid] = conversationHandler.createNewConversation(receiver);
+        conversation.get().start();
     }
 
-    void sendMessage(AclMessage&& message, UniqueConversationId uid) {
+    // it is recommended to use sendMessage member function over direct communicationHandler call
+    virtual void sendMessage(AclMessage&& message, UniqueConversationId uid) {
         message.sender = name;
         message.receiver = uid.second;
         message.conversationId = uid.first;
         std::string data = serializer.serialize(message);
 
         communicationHandler.send(data);
-        // message.+
     }
 
-    using AgentBehaviour = _Behaviour;
     friend class ConversationHandler<Agent>;
 
-protected:
     const std::string name;
     JsonSerializer serializer;
     _CommunicationHandler communicationHandler;
     ConversationHandler<Agent> conversationHandler;
 
 private:
-    std::unique_ptr<_Behaviour> createBehaviour() {
+    virtual std::unique_ptr<_Behaviour> createBehaviour() {
         static_assert(std::derived_from<typename _Behaviour::Agent, Agent>);
-        auto* agentSpecialization = dynamic_cast<typename _Behaviour::Agent*>(this);
-        assert(agentSpecialization != nullptr);
-        return std::make_unique<_Behaviour>(agentSpecialization);
+        if constexpr (std::is_same_v<typename _Behaviour::Agent, std::remove_cvref_t<decltype(*this)>>) {
+            return std::make_unique<_Behaviour>(this);
+        } else {
+            auto* agentSpecialization = dynamic_cast<typename _Behaviour::Agent*>(this);
+            assert(agentSpecialization != nullptr);
+            return std::make_unique<_Behaviour>(agentSpecialization);
+        }
     }
 };
 
@@ -308,9 +323,14 @@ template <typename _Agent>
 class Behaviour {
 public:
     explicit Behaviour(_Agent* agent) : agent(agent) {}
+    explicit Behaviour(const Behaviour&) = default;
+    Behaviour(Behaviour&& o) : agent(o.agent), uniqueConversationId(std::move(o.uniqueConversationId)) {
+        o.agent = nullptr;
+    }
     virtual ~Behaviour() = default;
 
-    virtual void handleMessage(const AclMessage&) = 0;
+    virtual void handleReceivedMessage(const AclMessage&) = 0;
+    virtual void start() = 0;
 
     virtual bool isFinished() = 0;
     using Agent = _Agent;
@@ -318,7 +338,6 @@ public:
 protected:
     _Agent* agent;
 
-private:
     template <typename T>
     friend class ConversationHandler;
 
@@ -331,15 +350,18 @@ private:
 }
 
 template <typename _Agent>
-class MyBehaviour : public scaf::Behaviour<_Agent> {
+class ResponseWithTemperatureBehaviour : public scaf::Behaviour<_Agent> {
 public:
-    explicit MyBehaviour(_Agent* agent) : scaf::Behaviour<_Agent>(agent) {}
+    explicit ResponseWithTemperatureBehaviour(_Agent* agent) : scaf::Behaviour<_Agent>(agent) {}
 
     using scaf::Behaviour<_Agent>::agent;
 
-    void handleMessage(const scaf::AclMessage& m) override {
+    void handleReceivedMessage(const scaf::AclMessage& m) override {
         std::cout << "Got AclMessage: " << m.content << std::endl;
-        agent->getCommunicationHandler();
+    }
+
+    virtual void start() override {
+        std::cout << "ResponseWithTemperatureBehaviour starts" << std::endl;
     }
 
     bool isFinished() override {
@@ -348,9 +370,12 @@ public:
     }
 };
 
-class MyAgent : public scaf::Agent<MyBehaviour<MyAgent>> {
+class MyAgent : public scaf::Agent<ResponseWithTemperatureBehaviour<MyAgent>> {
 public:
-    explicit MyAgent(const std::string& name) : scaf::Agent<MyBehaviour<MyAgent>>(name) {}
+    explicit MyAgent(const std::string& name) : scaf::Agent<ResponseWithTemperatureBehaviour<MyAgent>>(name) {}
+    void work() {
+        startConversation("other_agent");
+    }
 };
 
 std::unique_ptr<MyAgent> myAgent;
@@ -362,7 +387,7 @@ void handler(std::span<char> data) {
 void set_event_handler(void (*on_data_handler)(std::span<char>)) {
     using namespace scaf;
     AclMessage message{
-        .performative = Performative::Inform,
+        .performative = Performative::inform,
         .sender = "this",
         .receiver = "other",
         .content = "Hello World",
@@ -380,4 +405,5 @@ void set_event_handler(void (*on_data_handler)(std::span<char>)) {
 int main() {
     myAgent = std::make_unique<MyAgent>("MyAgent");
     set_event_handler(handler);
+    myAgent->work();
 }
