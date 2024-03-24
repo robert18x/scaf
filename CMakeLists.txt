@@ -61,9 +61,9 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wpedantic -Wnon-virtual-dtor)
 endif()
 
-find_package(Threads REQUIRED)
-find_package(nlohmann_json REQUIRED)
-find_package(fmt REQUIRED)
+find_package(Threads)
+find_package(nlohmann_json)
+find_package(fmt)
 
 target_link_libraries(${PROJECT_NAME} INTERFACE
   fmt::fmt
