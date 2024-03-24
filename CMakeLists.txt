@@ -12,26 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Generate compile_commands.json to make it easier to work with clang based tools
 
-
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
-  message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-  file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/0.18.1/conan.cmake"
-    "${CMAKE_BINARY_DIR}/conan.cmake"
-    EXPECTED_HASH SHA256=5cdb3042632da3efff558924eecefd580a0e786863a857ca097c3d1d43df5dcd
-    TLS_VERIFY ON)
-endif()
-
-include(${CMAKE_BINARY_DIR}/conan.cmake)
-
-conan_cmake_autodetect(settings)
-
-
-conan_cmake_install(PATH_OR_REFERENCE ${CMAKE_SOURCE_DIR}/conanfile.py
-  BUILD missing
-  SETTINGS ${settings})
-
-include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
-
+option(TESTS_ENABLED "Enable tests" OFF)
 
 add_library(${PROJECT_NAME} INTERFACE
   "include/AclMessage.h"
@@ -45,13 +26,36 @@ add_library(${PROJECT_NAME} INTERFACE
   "include/utils.h"
 )
 
+if(TESTS_ENABLED)
 
-add_executable("${PROJECT_NAME}_test"
-  main.cpp
-)
 
-target_link_libraries("${PROJECT_NAME}_test" PUBLIC ${PROJECT_NAME})
+  if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+    file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/0.18.1/conan.cmake"
+      "${CMAKE_BINARY_DIR}/conan.cmake"
+      EXPECTED_HASH SHA256=5cdb3042632da3efff558924eecefd580a0e786863a857ca097c3d1d43df5dcd
+      TLS_VERIFY ON)
+  endif()
 
+  include(${CMAKE_BINARY_DIR}/conan.cmake)
+
+  conan_cmake_autodetect(settings)
+
+
+  conan_cmake_install(PATH_OR_REFERENCE ${CMAKE_SOURCE_DIR}/conanfile.py
+    BUILD missing
+    SETTINGS ${settings})
+
+  include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
+
+  add_executable("${PROJECT_NAME}_test"
+    main.cpp
+  )
+
+  target_link_libraries("${PROJECT_NAME}_test" PUBLIC ${PROJECT_NAME})
+
+
+endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wpedantic -Wnon-virtual-dtor)
