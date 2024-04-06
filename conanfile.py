@@ -16,7 +16,7 @@ class Scafonan(ConanFile):
 
     def _configure_cmake(self):
         cmake = CMake(self)
-        cmake.definitions["CMAKE_BUILD_TYPE"] = self.settings.build_type.upper()
+        cmake.definitions["CMAKE_BUILD_TYPE"] = self.settings.build_type
         cmake.configure()
         return cmake
 
