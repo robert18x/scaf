@@ -1,5 +1,6 @@
 #pragma once
 #include "ConversationHandler.h"
+#include <future>
 
 namespace scaf {
 
@@ -14,7 +15,7 @@ public:
     virtual ~Behaviour() = default;
 
     virtual void handleReceivedMessage(const AclMessage&) = 0;
-    virtual void start() = 0;
+    virtual std::future<Behaviour<_Agent>*> start() = 0;
 
     virtual bool isFinished() = 0;
     using Agent = _Agent;

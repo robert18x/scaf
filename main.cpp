@@ -26,14 +26,20 @@ public:
         std::cout << "Got AclMessage: " << m.content << std::endl;
     }
 
-    virtual void start() override {
+    virtual std::future<scaf::Behaviour<_Agent>*> start() override {
+        std::promise<scaf::Behaviour<_Agent>*> p;
+        p.set_value(this);
         std::cout << "ResponseWithTemperatureBehaviour starts" << std::endl;
+        data = "prepared data";
+        return p.get_future();
     }
 
     bool isFinished() override {
         // TODO
         return true;
     }
+
+    std::string data;
 };
 
 
@@ -48,7 +54,9 @@ class MyAgent : public scaf::Agent<ResponseWithTemperatureBehaviour<MyAgent>, De
 public:
     explicit MyAgent(const std::string& name) : scaf::Agent<ResponseWithTemperatureBehaviour<MyAgent>, DefaultCommunicationHandler>(name) {}
     void work() {
-        startConversation("other_agent");
+        std::future behaviour = startConversation("other_agent");
+        ResponseWithTemperatureBehaviour<MyAgent>* behv = static_cast<ResponseWithTemperatureBehaviour<MyAgent>*>(behaviour.get());
+        std::cout << behv->data << std::endl;
     }
 };
 

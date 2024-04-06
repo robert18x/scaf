@@ -7,6 +7,7 @@
 #include <type_traits>
 
 #include "AclMessage.h"
+#include "Behaviour.h"
 #include "CommunicationHandler.h"
 #include "ConversationHandler.h"
 #include "JsonSerializer.h"
@@ -38,9 +39,9 @@ public:
     using AgentBehaviour = _Behaviour;
 
 protected:
-    virtual void startConversation(const decltype(AclMessage::receiver)& receiver) {
+    virtual decltype(_Behaviour(nullptr).start()) startConversation(const decltype(AclMessage::receiver)& receiver) {
         auto [conversation, uid] = conversationHandler.createNewConversation(receiver);
-        conversation.get().start();
+        return conversation.get().start();
     }
 
     // it is recommended to use sendMessage member function over direct communicationHandler call
