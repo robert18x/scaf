@@ -1,5 +1,4 @@
-from conans import ConanFile, CMake, tools
-
+from conans import ConanFile
 
 required_conan_version = ">=1.60.0 <2"
 
@@ -13,16 +12,11 @@ class Scafonan(ConanFile):
         "nlohmann_json/3.11.3",
     ]
     generators = "cmake_find_package", "cmake_paths"
+    exports_sources = "include/*"
+    no_copy_source = True
 
-    def _configure_cmake(self):
-        cmake = CMake(self)
-        cmake.definitions["CMAKE_BUILD_TYPE"] = self.settings.build_type
-        cmake.configure()
-        return cmake
+    def package(self):
+        self.copy("*.h", dst="include/scaf", src="include")
 
-    def configure(self):
-        tools.check_min_cppstd(self, "23")
-
-    def build(self):
-        cmake = self._configure_cmake()
-        cmake.build()
+    def package_id(self):
+        self.info.clear()
