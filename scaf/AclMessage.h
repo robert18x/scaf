@@ -26,10 +26,9 @@ struct AclMessage {
     std::optional<std::string> inReplayTo = std::nullopt;
     std::optional<std::chrono::system_clock::time_point> replayBy = std::nullopt;
 
-    static_assert(std::is_same_v<decltype(sender), decltype(receiver)>);
+    static_assert(std::is_same_v<std::remove_cvref_t<decltype(sender)>, std::remove_cvref_t<decltype(receiver)>>);
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AclMessage, performative, sender, receiver, replayTo, content, language, encoding, ontology, protocol, conversationId,
-                                   replayWith, inReplayTo, replayBy);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AclMessage, performative, sender, receiver, replayTo, content, language, encoding, ontology, protocol, conversationId, replayWith, inReplayTo, replayBy);
 
 }

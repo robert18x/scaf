@@ -6,24 +6,26 @@
 #include <map>
 #include <memory>
 #include <nlohmann/json.hpp>
-#include "include/Agent.h"
-#include "include/Behaviour.h"
+#include "Agent.h"
+#include "Behaviour.h"
 #include <optional>
 #include <ranges>
 #include <span>
 #include <type_traits>
 #include <unordered_map>
+#include "Uid.h"
 
 
 template <typename _Agent>
 class ResponseWithTemperatureBehaviour : public scaf::Behaviour<_Agent> {
 public:
-    explicit ResponseWithTemperatureBehaviour(_Agent* agent) : scaf::Behaviour<_Agent>(agent) {}
+    explicit ResponseWithTemperatureBehaviour(_Agent* agent, scaf::UniqueConversationId uid) : scaf::Behaviour<_Agent>(agent, uid) {}
 
     using scaf::Behaviour<_Agent>::agent;
 
-    void handleReceivedMessage(const scaf::AclMessage& m) override {
+    std::expected<void, scaf::Error> handleReceivedMessage(const scaf::AclMessage& m) override {
         std::cout << "Got AclMessage: " << m.content << std::endl;
+        return {};
     }
 
     virtual std::future<scaf::Behaviour<_Agent>*> start() override {

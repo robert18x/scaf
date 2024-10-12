@@ -11,6 +11,7 @@
 #include "CommunicationHandler.h"
 #include "ConversationHandler.h"
 #include "JsonSerializer.h"
+#include "Uid.h"
 
 namespace scaf {  // Smart Contracting Agents Framework
 
@@ -39,19 +40,13 @@ public:
     using AgentBehaviour = _Behaviour;
 
 protected:
-    virtual decltype(_Behaviour(nullptr).start()) startConversation(const decltype(AclMessage::receiver)& receiver) {
+    virtual decltype(std::declval<_Behaviour>().start()) startConversation(const decltype(AclMessage::receiver)& receiver) {
         auto [conversation, uid] = conversationHandler.createNewConversation(receiver);
         return conversation.get().start();
     }
 
-    // it is recommended to use sendMessage member function over direct communicationHandler call
-    virtual void sendMessage(AclMessage&& message, UniqueConversationId uid) {
-        message.sender = name;
-        message.receiver = uid.second;
-        message.conversationId = uid.first;
-        std::string data = serializer.serialize(message);
-
-        communicationHandler.send(data);
+    virtual void sendMessage(AclMessage&& message, const _Behaviour& behaviour) {
+        sendMessage(std::move(message), behaviour.getUid());
     }
 
     friend class ConversationHandler<Agent>;
@@ -62,14 +57,24 @@ protected:
     ConversationHandler<Agent> conversationHandler;
 
 private:
-    virtual std::unique_ptr<_Behaviour> createBehaviour() {
+    // it is recommended to use sendMessage member function over direct communicationHandler call
+    virtual void sendMessage(AclMessage&& message, UniqueConversationId uid) {
+        message.sender = name;
+        message.receiver = uid.sender;
+        message.conversationId = uid.conversationId;
+        std::string data = serializer.serialize(message);
+
+        communicationHandler.send(data);
+    }
+
+    virtual std::unique_ptr<_Behaviour> createBehaviour(UniqueConversationId uid) {
         static_assert(std::derived_from<typename _Behaviour::Agent, Agent>);
         if constexpr (std::is_same_v<typename _Behaviour::Agent, std::remove_cvref_t<decltype(*this)>>) {
-            return std::make_unique<_Behaviour>(this);
+            return std::make_unique<_Behaviour>(this, uid);
         } else {
             auto* agentSpecialization = dynamic_cast<typename _Behaviour::Agent*>(this);
             assert(agentSpecialization != nullptr);
-            return std::make_unique<_Behaviour>(agentSpecialization);
+            return std::make_unique<_Behaviour>(agentSpecialization, uid);
         }
     }
 };

@@ -6,10 +6,9 @@
 #include <utility>
 
 #include "AclMessage.h"
+#include "Uid.h"
 
 namespace scaf {
-
-using UniqueConversationId = std::pair<decltype(AclMessage::conversationId), decltype(AclMessage::sender)>;
 
 template <typename _Agent>
 class ConversationHandler {
@@ -21,7 +20,7 @@ private:
 
 public:
     void handleMessage(const AclMessage& message) {
-        UniqueConversationId uid = std::make_pair(message.conversationId, message.sender);
+        UniqueConversationId uid(message.conversationId, message.sender);
         auto it = activeConversations.find(uid);
         if (it != activeConversations.end()) {
             handleConversation(it->first, *it->second, message);
@@ -32,15 +31,14 @@ public:
     }
 
     std::tuple<std::reference_wrapper<Conversation>, UniqueConversationId> createNewConversation(const decltype(AclMessage::receiver)& receiver) {
-        UniqueConversationId uid = std::make_pair(conversationIdGenerator++, receiver);
+        UniqueConversationId uid(generateConversationId(), receiver);
         Conversation& conversation = createNewConversation(uid);
         return std::make_pair(std::reference_wrapper(conversation), uid);
     }
 
 private:
     Conversation& createNewConversation(const UniqueConversationId& uid) {
-        std::unique_ptr<Conversation> conversation = correspondingAgent->createBehaviour();
-        conversation->setUid(uid);
+        std::unique_ptr<Conversation> conversation = correspondingAgent->createBehaviour(uid);
         [[maybe_unused]] auto [iterator, inserted] = activeConversations.emplace(uid, std::move(conversation));
         assert(inserted == true);
         return *iterator->second;
@@ -48,7 +46,8 @@ private:
 
     void handleConversation(const UniqueConversationId& uid, Conversation& conversation, const AclMessage& message) {
         try {
-            conversation.handleReceivedMessage(message);
+            auto ret = conversation.handleReceivedMessage(message);
+
         } catch (...) {  // unhandled exception - invalid conversation
             removeConversation(uid);
         }
@@ -58,6 +57,10 @@ private:
 
     void removeConversation(const UniqueConversationId& uid) {
         activeConversations.erase(uid);
+    }
+
+    constexpr auto generateConversationId() {
+        return conversationIdGenerator++;
     }
 
     decltype(AclMessage::conversationId) conversationIdGenerator = 0;
