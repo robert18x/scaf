@@ -10,13 +10,16 @@
 #include "Behaviour.h"
 #include "CommunicationHandler.h"
 #include "ConversationHandler.h"
+#include "ErrorHandler.h"
 #include "JsonSerializer.h"
 #include "Uid.h"
 
 namespace scaf {  // Smart Contracting Agents Framework
 
-template <typename _Behaviour, typename _CommunicationHandler>
-    requires std::derived_from<_CommunicationHandler, CommunicationHandler>
+template <typename _Behaviour, typename _CommunicationHandler, typename _ErrorHandler>
+    requires std::derived_from<_CommunicationHandler, CommunicationHandler> and
+             std::derived_from<_ErrorHandler, ErrorHandler>
+
 class Agent {
 public:
     explicit Agent(const std::string& name) : name(name), conversationHandler(this) {}
@@ -50,10 +53,12 @@ protected:
     }
 
     friend class ConversationHandler<Agent>;
+    using Super = std::remove_cvref_t<decltype(std::declval<Agent>())>;
 
     const std::string name;
     JsonSerializer serializer;
     _CommunicationHandler communicationHandler;
+    _ErrorHandler errorHandler;
     ConversationHandler<Agent> conversationHandler;
 
 private:

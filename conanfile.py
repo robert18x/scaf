@@ -11,6 +11,7 @@ class ScafConan(ConanFile):
     requires = [
         "fmt/11.0.2",
         "nlohmann_json/3.11.3",
+        "magic_enum/0.9.6",
     ]
     generators = "CMakeDeps", "CMakeToolchain"
     exports_sources = "scaf/*"

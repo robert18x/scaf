@@ -8,6 +8,7 @@ namespace scaf {
     enum class RetCode {
         serialization_error,
         deserialization_error,
+        generic_error,
     };
 
     class Error {

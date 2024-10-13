@@ -10,11 +10,13 @@ add_executable(${PROJECT_NAME}
 find_package(Threads)
 find_package(nlohmann_json)
 find_package(fmt)
+find_package(magic_enum)
 
 target_include_directories(${PROJECT_NAME} PUBLIC . ../scaf)
 target_link_libraries(${PROJECT_NAME} PUBLIC
   scaf
   fmt::fmt
   nlohmann_json::nlohmann_json
+  magic_enum::magic_enum
   Threads::Threads
 )

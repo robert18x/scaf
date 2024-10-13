@@ -13,6 +13,7 @@
 #include <span>
 #include <type_traits>
 #include <unordered_map>
+#include <magic_enum.hpp>
 #include "Uid.h"
 
 
@@ -52,9 +53,16 @@ public:
     }
 };
 
-class MyAgent : public scaf::Agent<ResponseWithTemperatureBehaviour<MyAgent>, DefaultCommunicationHandler> {
+class DefaultErrorHandler : public scaf::ErrorHandler {
 public:
-    explicit MyAgent(const std::string& name) : scaf::Agent<ResponseWithTemperatureBehaviour<MyAgent>, DefaultCommunicationHandler>(name) {}
+    void handle(const scaf::Error& error) noexcept override {
+        std::cerr << magic_enum::enum_name(error.getRetCode()) << error.getMessage() << std::endl;
+    }
+};
+
+class MyAgent : public scaf::Agent<ResponseWithTemperatureBehaviour<MyAgent>, DefaultCommunicationHandler, DefaultErrorHandler> {
+public:
+    explicit MyAgent(const std::string& name) : Super(name) {}
     void work() {
         std::future behaviour = startConversation("other_agent");
         ResponseWithTemperatureBehaviour<MyAgent>* behv = static_cast<ResponseWithTemperatureBehaviour<MyAgent>*>(behaviour.get());

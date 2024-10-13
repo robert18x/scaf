@@ -4,7 +4,8 @@
 #include <map>
 #include <memory>
 #include <utility>
-
+#include <expected>
+#include "Error.h"
 #include "AclMessage.h"
 #include "Uid.h"
 
@@ -21,8 +22,7 @@ private:
 public:
     void handleMessage(const AclMessage& message) {
         UniqueConversationId uid(message.conversationId, message.sender);
-        auto it = activeConversations.find(uid);
-        if (it != activeConversations.end()) {
+        if (auto it = activeConversations.find(uid); it != activeConversations.end()) {
             handleConversation(it->first, *it->second, message);
         } else {
             Conversation& conversation = createNewConversation(uid);
@@ -45,11 +45,16 @@ private:
     }
 
     void handleConversation(const UniqueConversationId& uid, Conversation& conversation, const AclMessage& message) {
+        std::expected<void, Error> ret;
         try {
-            auto ret = conversation.handleReceivedMessage(message);
-
+            ret = conversation.handleReceivedMessage(message);
+        } catch (const std::exception& e) {  // unhandled exception - invalid conversation
+            ret = std::unexpected(Error(RetCode::generic_error, e.what()));
         } catch (...) {  // unhandled exception - invalid conversation
-            removeConversation(uid);
+            ret = std::unexpected(Error(RetCode::generic_error, std::string{}));
+        }
+        if (not ret.has_value()) {
+            correspondingAgent->errorHandler.handle(ret.error());
         }
         if (conversation.isFinished())  // if finnished also remove conversation
             removeConversation(uid);

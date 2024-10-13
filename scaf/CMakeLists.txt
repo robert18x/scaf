@@ -12,14 +12,14 @@ add_library(${PROJECT_NAME} INTERFACE
   utils.h
 )
 
-find_package(Threads)
 find_package(nlohmann_json)
 find_package(fmt)
+find_package(magic_enum)
 
 target_link_libraries(${PROJECT_NAME} INTERFACE
   fmt::fmt
   nlohmann_json::nlohmann_json
-  Threads::Threads
+  magic_enum::magic_enum
 )
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
