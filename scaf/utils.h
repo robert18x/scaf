@@ -3,16 +3,15 @@
 #include <chrono>
 #include <nlohmann/json.hpp>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <string_view>
 
 namespace scaf::utils {
 
 bool compareStringsLowercase(std::string_view first, std::string_view second) {
-    std::string firstLowercase(first), secondLowercase(second);
-    std::ranges::for_each(firstLowercase, [](char& c) { c = std::tolower(c); });
-    std::ranges::for_each(secondLowercase, [](char& c) { c = std::tolower(c); });
-    return firstLowercase == secondLowercase;
+    auto toLower = std::views::transform([](auto c) { return std::tolower(c); });
+    return std::ranges::equal(first | toLower, second | toLower);
 }
 
 }

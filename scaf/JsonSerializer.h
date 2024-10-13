@@ -5,46 +5,48 @@
 #include <nlohmann/json.hpp>
 #include <span>
 #include <string>
+#include <expected>
+#include <cctype>
+#include <ranges>
 
 #include "AclMessage.h"
-#include "Exceptions.h"
 #include "utils.h"
+#include "Error.h"
 
 namespace scaf {
 
 class JsonSerializer {
 public:
-    AclMessage deserialize(std::span<char> data) {
+    std::expected<AclMessage, Error> deserialize(std::span<char> data) {
+        using namespace scaf::utils;
         try {
             nlohmann::json json = nlohmann::json::parse(data);
-            if (not json.contains("language") or json.at("language") != language)
-                throw SerializationError("Missing or invalid language type. Currently only Json is supported");
+            if (auto it = json.find("language"); it == json.end() or not compareStringsLowercase(it.value().get<std::string>(), language))
+                return std::unexpected(Error(RetCode::deserialization_error, "Missing or invalid language type. Currently only Json is supported"));
 
-            if (not json.contains("encoding") or not utils::compareStringsLowercase(json.at("encoding").get<std::string>(), encoding))
-                throw SerializationError("Missing or invalid encoding type. Currently only utf8 is supported");
+            if (auto it = json.find("encoding"); it == json.end() or not compareStringsLowercase(it.value().get<std::string>(), encoding))
+                return std::unexpected(Error(RetCode::deserialization_error, "Missing or invalid encoding type. Currently only utf8 is supported"));
 
             return json.get<AclMessage>();
-        } catch (const SerializationError& e) {
-            throw e;
         } catch (const std::exception& e) {
-            throw SerializationError(fmt::format("Occured error while deserialization, error: {}", e.what()));
+            return std::unexpected(Error(RetCode::deserialization_error, fmt::format("Occured error while deserialization, error: {}", e.what())));
         }
     }
 
-    std::string serialize(AclMessage& message) {
+    std::expected<std::string, Error> serialize(AclMessage& message) {
         try {
             message.encoding = encoding;
             message.language = language;
             nlohmann::json json = message;
             return json.dump();
         } catch (const std::exception& e) {
-            throw SerializationError(fmt::format("Occured error while serialization, error: {}", e.what()));
+            return std::unexpected(Error(RetCode::serialization_error, e.what()));
         }
     }
 
 private:
-    static inline const std::string encoding = "utf8";
-    static inline const std::string language = "json";
+    static inline constexpr std::string encoding = "utf8";
+    static inline constexpr std::string language = "json";
 };
 
 }

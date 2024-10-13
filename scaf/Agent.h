@@ -29,12 +29,13 @@ public:
 
     void handleData(std::span<char> data) {
         try {
-            auto message = serializer.deserialize(data);
-            conversationHandler.handleMessage(message);
-        } catch (const SerializationError& e) {
-            std::cerr << "Deserialization error: " << e.what() << std::endl;
+            std::expected message = serializer.deserialize(data);
+            if (message.has_value())
+                conversationHandler.handleMessage(message.value());
+            else
+                errorHandler.handle(message.error());
         } catch (const std::exception& e) {
-            std::cerr << "Unrecognized error in Agent::handleData member function:" << e.what() << std::endl;
+            std::cerr << "Unrecognized exception in Agent::handleData member function:" << e.what() << std::endl;
         } catch (...) {
             std::cerr << "Unknown error in Agent::handleData member function!" << std::endl;
         }
@@ -53,7 +54,7 @@ protected:
     }
 
     friend class ConversationHandler<Agent>;
-    using Super = std::remove_cvref_t<decltype(std::declval<Agent>())>;
+    using Super = Agent<_Behaviour, _CommunicationHandler, _ErrorHandler>;
 
     const std::string name;
     JsonSerializer serializer;
@@ -67,9 +68,12 @@ private:
         message.sender = name;
         message.receiver = uid.sender;
         message.conversationId = uid.conversationId;
-        std::string data = serializer.serialize(message);
-
-        communicationHandler.send(data);
+        std::expected data = serializer.serialize(message);
+        if (data.has_value()) {
+            communicationHandler.send(data.value());
+        } else {
+            errorHandler.handle(data.error());
+        }
     }
 
     virtual std::unique_ptr<_Behaviour> createBehaviour(UniqueConversationId uid) {
