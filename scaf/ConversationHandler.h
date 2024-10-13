@@ -55,6 +55,7 @@ private:
         }
         if (not ret.has_value()) {
             correspondingAgent->errorHandler.handle(ret.error());
+            removeConversation(uid);
         }
         if (conversation.isFinished())  // if finnished also remove conversation
             removeConversation(uid);

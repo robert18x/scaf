@@ -19,7 +19,6 @@ namespace scaf {  // Smart Contracting Agents Framework
 template <typename _Behaviour, typename _CommunicationHandler, typename _ErrorHandler>
     requires std::derived_from<_CommunicationHandler, CommunicationHandler> and
              std::derived_from<_ErrorHandler, ErrorHandler>
-
 class Agent {
 public:
     explicit Agent(const std::string& name) : name(name), conversationHandler(this) {}
@@ -35,9 +34,10 @@ public:
             else
                 errorHandler.handle(message.error());
         } catch (const std::exception& e) {
-            std::cerr << "Unrecognized exception in Agent::handleData member function:" << e.what() << std::endl;
+            Error error(RetCode::generic_error, fmt::format("Unrecognized exception in Agent::handleData member function: {}", e.what()));
+            errorHandler.handle(error);
         } catch (...) {
-            std::cerr << "Unknown error in Agent::handleData member function!" << std::endl;
+            errorHandler.handle(Error(RetCode::generic_error, "Unknown error in Agent::handleData member function!"));
         }
     }
 
@@ -81,8 +81,7 @@ private:
         if constexpr (std::is_same_v<typename _Behaviour::Agent, std::remove_cvref_t<decltype(*this)>>) {
             return std::make_unique<_Behaviour>(this, uid);
         } else {
-            auto* agentSpecialization = dynamic_cast<typename _Behaviour::Agent*>(this);
-            assert(agentSpecialization != nullptr);
+            auto* agentSpecialization = static_cast<typename _Behaviour::Agent*>(this);
             return std::make_unique<_Behaviour>(agentSpecialization, uid);
         }
     }
