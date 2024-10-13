@@ -6,9 +6,11 @@ add_library(${PROJECT_NAME} INTERFACE
   Behaviour.h
   CommunicationHandler.h
   ConversationHandler.h
-  Exceptions.h
+  Error.h
+  ErrorHandler.h
   JsonSerializer.h
   Performative.h
+  Uid.h
   utils.h
 )
 

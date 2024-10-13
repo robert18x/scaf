@@ -11,7 +11,7 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "bash prepare_env.sh",
+	"postCreateCommand": "bash .devcontainer/prepare_env.sh",
 
 	// Configure tool-specific properties.
 	"customizations": {
@@ -19,8 +19,12 @@
 			"extensions": [
 				"ms-vscode.cpptools-extension-pack",
 				"EditorConfig.EditorConfig",
-				"eamodio.gitlens"
-			]
+				"eamodio.gitlens",
+				"xaver.clang-format"
+			],
+			"settings": {
+				"clang-format.executable": "clang-format"
+			}
 		}
 	}
 

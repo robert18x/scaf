@@ -26,11 +26,10 @@ public:
     constexpr UniqueConversationId getUid() const { return uid; }
 
 protected:
-    _Agent* agent;
-
     template <typename T>
     friend class ConversationHandler;
 
+    _Agent* agent;
     UniqueConversationId uid;
 };
 

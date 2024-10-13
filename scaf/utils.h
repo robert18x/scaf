@@ -4,8 +4,13 @@
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <ranges>
+#include <type_traits>
 #include <string>
 #include <string_view>
+#include <concepts>
+#include <expected>
+#include <source_location>
+#include "Error.h"
 
 namespace scaf::utils {
 
@@ -13,6 +18,17 @@ bool compareStringsLowercase(std::string_view first, std::string_view second) {
     auto toLower = std::views::transform([](auto c) { return std::tolower(c); });
     return std::ranges::equal(first | toLower, second | toLower);
 }
+
+// template <RetCode errorCode = RetCode::generic_error>
+// auto safeCall(std::invocable auto&& callable, std::source_location sl = std::source_location::current()) -> std::expected<std::remove_reference_t<decltype(callable())>, Error> {
+//     try {
+//         return callable();
+//     } catch (const std::exception& e) {
+//         return std::unexpected(Error(errorCode, e.what()));
+//     } catch (...) {
+//         return std::unexpected(Error(errorCode), fmt::format("Occured unknown error while executing function at {}:{}", sl.file_name(), sl.line()));
+//     }
+// }
 
 }
 
