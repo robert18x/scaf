@@ -57,6 +57,7 @@ class ScafConan(ConanFile):
         self.cpp_info.includedirs = ['include']
         self.cpp_info.bindirs = []
         self.cpp_info.libdirs = []
+        self.cpp_info.libs = []
         self.cpp_info.requires = [
             'fmt::fmt',
             'nlohmann_json::nlohmann_json',
