@@ -25,12 +25,11 @@ class ScafConan(ConanFile):
 
     def build_requirements(self):
         pass
-        # if self.options.build_tests:
 
     def generate(self):
         tc = CMakeToolchain(self)
         tc.variables["CMAKE_BUILD_TYPE"] = self.settings.build_type
-        tc.variables["BUILD_TESTING"] = ON
+        tc.variables["BUILD_TESTING"] = "ON"
         tc.generate()
 
         cmake = CMakeDeps(self)
