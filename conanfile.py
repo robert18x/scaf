@@ -58,8 +58,8 @@ class ScafConan(ConanFile):
         self.cpp_info.bindirs = []
         self.cpp_info.libdirs = []
         self.cpp_info.requires = [
-            'fmt',
-            'nlohmann_json',
-            'magic_enum',
+            'fmt::fmt',
+            'nlohmann_json::nlohmann_json',
+            'magic_enum::magic_enum',
         ]
 
