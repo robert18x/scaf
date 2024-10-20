@@ -49,3 +49,17 @@ class ScafConan(ConanFile):
 
     def package_id(self):
         self.info.clear()
+
+    def package_info(self):
+        self.cpp_info.set_property("cmake_file_name", "scaf")
+        self.cpp_info.set_property("cmake_target_name", "scaf::scaf")
+        self.cpp_info.set_property("pkg_config_name", "scaf")
+        self.cpp_info.includedirs = ['include']
+        self.cpp_info.bindirs = []
+        self.cpp_info.libdirs = []
+        self.cpp_info.requires = [
+            'fmt',
+            'nlohmann_json',
+            'magic_enum',
+        ]
+
