@@ -21,6 +21,7 @@ class ScafConan(ConanFile):
     default_options = {
         "build_tests": True,
     }
+    no_copy_source = True
 
     def layout(self):
         cmake_layout(self)
@@ -45,3 +46,6 @@ class ScafConan(ConanFile):
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
+
+    def package_id(self):
+        self.info.clear()
