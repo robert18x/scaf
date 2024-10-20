@@ -15,12 +15,6 @@ class ScafConan(ConanFile):
     ]
     generators = "CMakeDeps", "CMakeToolchain"
     exports_sources = "scaf/*", "tests/*", "CMakeLists.txt", "readme.md"
-    options = {
-        "build_tests": [True, False],
-    }
-    default_options = {
-        "build_tests": True,
-    }
     no_copy_source = True
 
     def layout(self):
@@ -36,7 +30,7 @@ class ScafConan(ConanFile):
     def generate(self):
         tc = CMakeToolchain(self)
         tc.variables["CMAKE_BUILD_TYPE"] = self.settings.build_type
-        tc.variables["BUILD_TESTING"] = self.options.build_tests
+        tc.variables["BUILD_TESTING"] = ON
         tc.generate()
 
         cmake = CMakeDeps(self)
@@ -57,10 +51,4 @@ class ScafConan(ConanFile):
         self.cpp_info.includedirs = ['include']
         self.cpp_info.bindirs = []
         self.cpp_info.libdirs = []
-        self.cpp_info.libs = []
-        self.cpp_info.requires = [
-            'fmt::fmt',
-            'nlohmann_json::nlohmann_json',
-            'magic_enum::magic_enum',
-        ]
 
