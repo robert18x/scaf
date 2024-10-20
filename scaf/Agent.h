@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <functional>
 #include <type_traits>
 
 #include "AclMessage.h"
@@ -27,26 +28,23 @@ public:
     Agent(Agent&&) = delete;
 
     void handleData(std::span<char> data) {
-        try {
+        auto ret = utils::safeCall([&]{
             std::expected message = serializer.deserialize(data);
             if (message.has_value())
                 conversationHandler.handleMessage(message.value());
             else
                 errorHandler.handle(message.error());
-        } catch (const std::exception& e) {
-            Error error(RetCode::generic_error, fmt::format("Unrecognized exception in Agent::handleData member function: {}", e.what()));
-            errorHandler.handle(error);
-        } catch (...) {
-            errorHandler.handle(Error(RetCode::generic_error, "Unknown error in Agent::handleData member function!"));
+        });
+        if (!ret) {
+            errorHandler.handle(ret.error());
         }
     }
 
     using AgentBehaviour = _Behaviour;
 
 protected:
-    virtual decltype(std::declval<_Behaviour>().start()) startConversation(const decltype(AclMessage::receiver)& receiver) {
-        auto [conversation, uid] = conversationHandler.createNewConversation(receiver);
-        return conversation.get().start();
+    virtual std::reference_wrapper<_Behaviour> createConversation(const decltype(AclMessage::receiver)& receiver) {
+        return std::reference_wrapper(conversationHandler.createNewConversation(receiver));
     }
 
     virtual void sendMessage(AclMessage&& message, const _Behaviour& behaviour) {
@@ -54,6 +52,8 @@ protected:
     }
 
     friend class ConversationHandler<Agent>;
+    friend _Behaviour;
+    
     using Super = Agent<_Behaviour, _CommunicationHandler, _ErrorHandler>;
 
     const std::string name;

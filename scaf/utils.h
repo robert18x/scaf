@@ -19,16 +19,31 @@ bool compareStringsLowercase(std::string_view first, std::string_view second) {
     return std::ranges::equal(first | toLower, second | toLower);
 }
 
-// template <RetCode errorCode = RetCode::generic_error>
-// auto safeCall(std::invocable auto&& callable, std::source_location sl = std::source_location::current()) -> std::expected<std::remove_reference_t<decltype(callable())>, Error> {
-//     try {
-//         return callable();
-//     } catch (const std::exception& e) {
-//         return std::unexpected(Error(errorCode, e.what()));
-//     } catch (...) {
-//         return std::unexpected(Error(errorCode), fmt::format("Occured unknown error while executing function at {}:{}", sl.file_name(), sl.line()));
-//     }
-// }
+template<typename Test, template<typename...> class Ref>
+struct is_specialization : std::false_type {};
+
+template<template<typename...> class Ref, typename... Args>
+struct is_specialization<Ref<Args...>, Ref> : std::true_type {};
+
+template <RetCode errorCode = RetCode::generic_error>
+auto safeCall(std::invocable auto&& callable, std::source_location sl = std::source_location::current()) -> 
+    std::conditional_t<is_specialization<std::remove_cvref_t<decltype(callable())>, std::expected>::value, 
+        std::remove_cvref_t<decltype(callable())>,
+        std::expected<std::remove_cv_t<decltype(callable())>, Error>
+    > {
+    try {
+        if constexpr (!is_specialization<std::remove_cvref_t<decltype(callable())>, std::expected>::value and std::is_same_v<decltype(callable()), void>) {
+            callable();
+            return std::expected<void, Error>();
+        } else {
+            return callable();
+        }
+    } catch (const std::exception& e) {
+        return std::unexpected(Error(errorCode, e.what()));
+    } catch (...) {
+        return std::unexpected(Error(errorCode, fmt::format("Occured unknown error while executing function at {}:{}", sl.file_name(), sl.line())));
+    }
+}
 
 }
 

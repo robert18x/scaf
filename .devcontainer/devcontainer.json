@@ -20,7 +20,8 @@
 				"ms-vscode.cpptools-extension-pack",
 				"EditorConfig.EditorConfig",
 				"eamodio.gitlens",
-				"xaver.clang-format"
+				"xaver.clang-format",
+				"josetr.cmake-language-support-vscode"
 			],
 			"settings": {
 				"clang-format.executable": "clang-format"

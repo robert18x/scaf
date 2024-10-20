@@ -27,3 +27,5 @@ target_link_libraries(${PROJECT_NAME} INTERFACE
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wpedantic -Wnon-virtual-dtor)
 endif()
+
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_23)

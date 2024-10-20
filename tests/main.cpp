@@ -25,15 +25,14 @@ public:
     using scaf::Behaviour<_Agent>::agent;
 
     std::expected<void, scaf::Error> handleReceivedMessage(const scaf::AclMessage& m) override {
-        std::cout << "Got AclMessage: " << m.content << std::endl;
+        std::cout << agent->name << ": " << "Got AclMessage - " << m.content << std::endl;
         return {};
     }
 
     virtual std::future<scaf::Behaviour<_Agent>*> start() override {
         std::promise<scaf::Behaviour<_Agent>*> p;
         p.set_value(this);
-        std::cout << "ResponseWithTemperatureBehaviour starts" << std::endl;
-        data = "prepared data";
+        std::cout << "ResponseWithTemperatureBehaviour" << std::endl;
         return p.get_future();
     }
 
@@ -56,7 +55,7 @@ public:
 class DefaultErrorHandler : public scaf::ErrorHandler {
 public:
     void handle(const scaf::Error& error) noexcept override {
-        std::cerr << magic_enum::enum_name(error.getRetCode()) << error.getMessage() << std::endl;
+        std::cerr << magic_enum::enum_name(error.getRetCode()) << ": " << error.getMessage() << std::endl;
     }
 };
 
@@ -64,38 +63,40 @@ class MyAgent : public scaf::Agent<ResponseWithTemperatureBehaviour<MyAgent>, De
 public:
     explicit MyAgent(const std::string& name) : Super(name) {}
     void work() {
-        std::future behaviour = startConversation("other_agent");
-        ResponseWithTemperatureBehaviour<MyAgent>* behv = static_cast<ResponseWithTemperatureBehaviour<MyAgent>*>(behaviour.get());
-        std::cout << behv->data << std::endl;
+        auto behaviour = createConversation("other_agent");
+        std::cout << behaviour.get().data << std::endl;
     }
 };
 
-std::unique_ptr<MyAgent> myAgent;
 
-void handler(std::span<char> data) {
-    if (myAgent != nullptr) myAgent->handleData(data);
-}
+std::function<void(std::span<char>)> handler = nullptr;
 
-void set_event_handler(void (*on_data_handler)(std::span<char>)) {
+void event() {
+    static int i = 0;
+
     using namespace scaf;
     AclMessage message{
         .performative = Performative::inform,
-        .sender = "this",
         .receiver = "other",
-        .content = "Hello World",
+        .content = fmt::format("Event {}", ++i),
         .language = "json",
         .encoding = "utf8",
         .ontology = "FIPA ACL",
         .protocol = "CNP",
-        .conversationId = 0,
     };
+
     nlohmann::json json = message;
     std::string data = json.dump();
-    on_data_handler(std::span<char>(data.data(), data.size()));
+
+    if (handler) {
+        handler(std::span(data));
+    }
 }
 
 int main() {
+    std::unique_ptr<MyAgent> myAgent;
     myAgent = std::make_unique<MyAgent>("MyAgent");
-    set_event_handler(handler);
+    handler = [&] (std::span<char> data) { myAgent->handleData(data); };
     myAgent->work();
+    event();
 }

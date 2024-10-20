@@ -6,6 +6,7 @@
 #include <utility>
 #include <expected>
 #include "Error.h"
+#include "utils.h"
 #include "AclMessage.h"
 #include "Uid.h"
 
@@ -30,10 +31,9 @@ public:
         }
     }
 
-    std::tuple<std::reference_wrapper<Conversation>, UniqueConversationId> createNewConversation(const decltype(AclMessage::receiver)& receiver) {
+    Conversation& createNewConversation(const decltype(AclMessage::receiver)& receiver) {
         UniqueConversationId uid(generateConversationId(), receiver);
-        Conversation& conversation = createNewConversation(uid);
-        return std::make_pair(std::reference_wrapper(conversation), uid);
+        return createNewConversation(uid);
     }
 
 private:
@@ -45,14 +45,7 @@ private:
     }
 
     void handleConversation(const UniqueConversationId& uid, Conversation& conversation, const AclMessage& message) {
-        std::expected<void, Error> ret;
-        try {
-            ret = conversation.handleReceivedMessage(message);
-        } catch (const std::exception& e) {  // unhandled exception - invalid conversation
-            ret = std::unexpected(Error(RetCode::generic_error, e.what()));
-        } catch (...) {  // unhandled exception - invalid conversation
-            ret = std::unexpected(Error(RetCode::generic_error, std::string{}));
-        }
+        std::expected<void, Error> ret = utils::safeCall([&]{ return conversation.handleReceivedMessage(message); });
         if (not ret.has_value()) {
             correspondingAgent->errorHandler.handle(ret.error());
             removeConversation(uid);

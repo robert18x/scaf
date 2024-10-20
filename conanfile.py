@@ -14,7 +14,7 @@ class ScafConan(ConanFile):
         "magic_enum/0.9.6",
     ]
     generators = "CMakeDeps", "CMakeToolchain"
-    exports_sources = "scaf/*"
+    exports_sources = "scaf/*", "tests/*", "CMakeLists.txt", "readme.md"
     options = {
         "build_tests": [True, False],
     }
@@ -45,6 +45,3 @@ class ScafConan(ConanFile):
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
-
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
