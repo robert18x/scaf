@@ -20,3 +20,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   magic_enum::magic_enum
   Threads::Threads
 )
+
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
+
+add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})

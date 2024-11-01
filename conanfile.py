@@ -11,7 +11,6 @@ class ScafConan(ConanFile):
     requires = [
         "fmt/11.0.2",
         "nlohmann_json/3.11.3",
-        "magic_enum/0.9.6",
     ]
     generators = "CMakeDeps", "CMakeToolchain"
     exports_sources = "scaf/*", "tests/*", "CMakeLists.txt", "readme.md"
@@ -22,9 +21,10 @@ class ScafConan(ConanFile):
 
     def package(self):
         self.copy("*.h", dst="include/scaf", src="scaf")
+        self.copy("*.a", dst="lib", src="", keep_path=False)
 
     def build_requirements(self):
-        pass
+        self.test_requires("magic_enum/0.9.6")
 
     def generate(self):
         tc = CMakeToolchain(self)
@@ -39,15 +39,3 @@ class ScafConan(ConanFile):
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
-
-    def package_id(self):
-        self.info.clear()
-
-    def package_info(self):
-        self.cpp_info.set_property("cmake_file_name", "scaf")
-        self.cpp_info.set_property("cmake_target_name", "scaf::scaf")
-        self.cpp_info.set_property("pkg_config_name", "scaf")
-        self.cpp_info.includedirs = ['include']
-        self.cpp_info.bindirs = []
-        self.cpp_info.libdirs = []
-

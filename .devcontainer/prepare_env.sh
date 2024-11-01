@@ -8,4 +8,5 @@ conan config init
 conan profile update settings.compiler.libcxx=libstdc++11 default
 conan profile update settings.compiler.version=14 default
 conan profile update settings.build_type=Debug default
+sed -i 's!\[general\]!\[general\]\nrevisions_enabled=1!' ~/.conan/conan.conf
 

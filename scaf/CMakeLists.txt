@@ -1,6 +1,6 @@
 project(scaf)
 
-add_library(${PROJECT_NAME} INTERFACE
+add_library(${PROJECT_NAME}
   AclMessage.h
   Agent.h
   Behaviour.h
@@ -12,20 +12,19 @@ add_library(${PROJECT_NAME} INTERFACE
   Performative.h
   Uid.h
   utils.h
+  empty.cpp
 )
 
 find_package(nlohmann_json)
 find_package(fmt)
-find_package(magic_enum)
 
-target_link_libraries(${PROJECT_NAME} INTERFACE
+target_link_libraries(${PROJECT_NAME} PUBLIC
   fmt::fmt
   nlohmann_json::nlohmann_json
-  magic_enum::magic_enum
 )
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wpedantic -Wnon-virtual-dtor)
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Wnon-virtual-dtor)
 endif()
 
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_23)
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
