@@ -10,6 +10,8 @@ add_library(${PROJECT_NAME}
   ErrorHandler.h
   JsonSerializer.h
   Performative.h
+  SynchronizedMap.h
+  ThreadManager.h
   Uid.h
   utils.h
   empty.cpp
@@ -17,10 +19,12 @@ add_library(${PROJECT_NAME}
 
 find_package(nlohmann_json)
 find_package(fmt)
+find_package(bshoshany-thread-pool)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
   fmt::fmt
   nlohmann_json::nlohmann_json
+  bshoshany-thread-pool::bshoshany-thread-pool
 )
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

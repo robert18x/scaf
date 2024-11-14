@@ -8,6 +8,7 @@
 #include "Error.h"
 #include "utils.h"
 #include "AclMessage.h"
+#include "SynchronizedMap.h"
 #include "Uid.h"
 
 namespace scaf {
@@ -23,39 +24,38 @@ private:
 public:
     void handleMessage(const AclMessage& message) {
         UniqueConversationId uid(message.conversationId, message.sender);
-        if (auto it = activeConversations.find(uid); it != activeConversations.end()) {
-            handleConversation(it->first, *it->second, message);
+        if (auto conversation = activeConversations.get(uid)) {
+            handleConversation(uid, **conversation, message);
         } else {
-            Conversation& conversation = createNewConversation(uid);
-            handleConversation(uid, conversation, message);
+            std::shared_ptr<Conversation> newConversation = createNewConversation(uid);
+            handleConversation(uid, *newConversation, message);
         }
     }
 
-    Conversation& createNewConversation(const decltype(AclMessage::receiver)& receiver) {
+    std::shared_ptr<Conversation> createNewConversation(const decltype(AclMessage::receiver)& receiver) {
         UniqueConversationId uid(generateConversationId(), receiver);
         return createNewConversation(uid);
     }
 
+    void removeConversation(const UniqueConversationId& uid) {
+        activeConversations.erase(uid);
+    }
+
 private:
-    Conversation& createNewConversation(const UniqueConversationId& uid) {
+    std::shared_ptr<Conversation> createNewConversation(const UniqueConversationId& uid) {
         std::unique_ptr<Conversation> conversation = correspondingAgent->createBehaviour(uid);
-        [[maybe_unused]] auto [iterator, inserted] = activeConversations.emplace(uid, std::move(conversation));
-        assert(inserted == true);
-        return *iterator->second;
+        return activeConversations.emplace(auto{uid}, std::move(conversation));
     }
 
     void handleConversation(const UniqueConversationId& uid, Conversation& conversation, const AclMessage& message) {
         std::expected<void, Error> ret = utils::safeCall([&]{ return conversation.handleReceivedMessage(message); });
-        if (not ret.has_value()) {
+
+        if (not ret.has_value()) {      // remove conversation on error
             correspondingAgent->errorHandler.handle(ret.error());
             removeConversation(uid);
         }
-        if (conversation.isFinished())  // if finnished also remove conversation
+        if (conversation.isFinished())  // if is finnished also remove conversation
             removeConversation(uid);
-    }
-
-    void removeConversation(const UniqueConversationId& uid) {
-        activeConversations.erase(uid);
     }
 
     constexpr auto generateConversationId() {
@@ -63,7 +63,8 @@ private:
     }
 
     decltype(AclMessage::conversationId) conversationIdGenerator = 0;
-    std::map<UniqueConversationId, std::unique_ptr<Conversation>> activeConversations;
+    // std::map<UniqueConversationId, std::shared_ptr<Conversation>> activeConversations;
+    SynchronizedMap<UniqueConversationId, std::shared_ptr<Conversation>> activeConversations;
     _Agent* correspondingAgent;
 };
 

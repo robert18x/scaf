@@ -18,7 +18,6 @@ public:
     constexpr virtual ~Behaviour() = default;
 
     constexpr virtual std::expected<void, Error> handleReceivedMessage(const AclMessage&) = 0;
-    constexpr virtual std::future<Behaviour<_Agent>*> start() = 0; // is not called by the 
 
     constexpr virtual bool isFinished() = 0;
     using Agent = _Agent;

@@ -13,6 +13,7 @@
 #include "ConversationHandler.h"
 #include "ErrorHandler.h"
 #include "JsonSerializer.h"
+#include "ThreadManager.h"
 #include "Uid.h"
 
 namespace scaf {  // Smart Contracting Agents Framework
@@ -40,15 +41,21 @@ public:
         }
     }
 
+    void start() {
+        threadManager.add([&, this] { work(); });
+        threadManager.add([&, this] { listenForMessages(); });
+        threadManager.wait();
+    }
+
     using AgentBehaviour = _Behaviour;
 
 protected:
-    virtual std::reference_wrapper<_Behaviour> createConversation(const decltype(AclMessage::receiver)& receiver) {
-        return std::reference_wrapper(conversationHandler.createNewConversation(receiver));
+    virtual std::shared_ptr<_Behaviour> createConversation(const decltype(AclMessage::receiver)& receiver) {
+        return conversationHandler.createNewConversation(receiver);
     }
 
     virtual void sendMessage(AclMessage&& message, const _Behaviour& behaviour) {
-        sendMessage(std::move(message), behaviour.getUid());
+        sendMessage(std::forward<AclMessage>(message), behaviour.getUid());
     }
 
     friend class ConversationHandler<Agent>;
@@ -61,6 +68,7 @@ protected:
     _CommunicationHandler communicationHandler;
     _ErrorHandler errorHandler;
     ConversationHandler<Agent> conversationHandler;
+    ThreadManager threadManager;
 
 private:
     // it is recommended to use sendMessage member function over direct communicationHandler call
@@ -73,6 +81,18 @@ private:
             communicationHandler.send(data.value());
         } else {
             errorHandler.handle(data.error());
+        }
+    }
+
+    virtual void work() = 0;
+
+    virtual bool finnished() = 0;
+
+
+    void listenForMessages() {
+        while(not finnished()) {
+            std::string data = communicationHandler.receive();
+            handleData(data);
         }
     }
 

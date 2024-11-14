@@ -29,13 +29,6 @@ public:
         return {};
     }
 
-    virtual std::future<scaf::Behaviour<_Agent>*> start() override {
-        std::promise<scaf::Behaviour<_Agent>*> p;
-        p.set_value(this);
-        std::cout << "ResponseWithTemperatureBehaviour" << std::endl;
-        return p.get_future();
-    }
-
     bool isFinished() override {
         // TODO
         return true;
@@ -50,6 +43,21 @@ public:
     void send(const std::string& data) override {
         std::cout << data << std::endl;  // TODO
     }
+
+    std::string receive() override {
+        scaf::AclMessage message{
+            .performative = scaf::Performative::propose,
+            .sender = "test_agent",
+            .receiver = "agent",
+            .content = "Data",
+            .language = scaf::JsonSerializer::language,
+            .encoding = scaf::JsonSerializer::encoding,
+            .protocol = "cnp",
+            .conversationId = 1,
+        };
+        nlohmann::json json = message;
+        return json.dump();
+    }
 };
 
 class DefaultErrorHandler : public scaf::ErrorHandler {
@@ -62,9 +70,21 @@ public:
 class MyAgent : public scaf::Agent<ResponseWithTemperatureBehaviour<MyAgent>, DefaultCommunicationHandler, DefaultErrorHandler> {
 public:
     explicit MyAgent(const std::string& name) : Super(name) {}
-    void work() {
+
+private:
+    void work() override {
         auto behaviour = createConversation("other_agent");
-        std::cout << behaviour.get().data << std::endl;
+        std::cout << behaviour->data << std::endl;
+    }
+
+    bool finnished() override {
+        static bool firstTime = true;
+        if (firstTime) {
+            firstTime = false;
+            return false;
+        } else {
+            return true;
+        }
     }
 };
 
@@ -80,7 +100,7 @@ void event() {
         .receiver = "other",
         .content = fmt::format("Event {}", ++i),
         .language = "json",
-        .encoding = "utf8",
+        .encoding = "utf-8",
         .ontology = "FIPA ACL",
         .protocol = "CNP",
     };
@@ -97,6 +117,6 @@ int main() {
     std::unique_ptr<MyAgent> myAgent;
     myAgent = std::make_unique<MyAgent>("MyAgent");
     handler = [&] (std::span<char> data) { myAgent->handleData(data); };
-    myAgent->work();
+    myAgent->start();
     event();
 }

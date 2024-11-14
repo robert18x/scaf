@@ -22,10 +22,10 @@ public:
         try {
             nlohmann::json json = nlohmann::json::parse(data);
             if (auto it = json.find("language"); it == json.end() or not compareStringsLowercase(it.value().get<std::string>(), language))
-                return std::unexpected(Error(RetCode::deserialization_error, "Missing or invalid language type. Currently only Json is supported"));
+                return std::unexpected(Error(RetCode::deserialization_error, fmt::format("Missing or invalid language type. Currently only {} is supported", language)));
 
             if (auto it = json.find("encoding"); it == json.end() or not compareStringsLowercase(it.value().get<std::string>(), encoding))
-                return std::unexpected(Error(RetCode::deserialization_error, "Missing or invalid encoding type. Currently only utf8 is supported"));
+                return std::unexpected(Error(RetCode::deserialization_error, fmt::format("Missing or invalid encoding type. Currently only {} is supported", encoding)));
 
             return json.get<AclMessage>();
         } catch (const std::exception& e) {
@@ -44,8 +44,7 @@ public:
         }
     }
 
-private:
-    static inline constexpr std::string encoding = "utf8";
+    static inline constexpr std::string encoding = "utf-8";
     static inline constexpr std::string language = "json";
 };
 
