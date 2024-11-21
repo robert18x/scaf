@@ -1,10 +1,11 @@
 #pragma once
 #include <cassert>
 #include <concepts>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <string>
-#include <functional>
+#include <thread>
 #include <type_traits>
 
 #include "AclMessage.h"
@@ -13,7 +14,6 @@
 #include "ConversationHandler.h"
 #include "ErrorHandler.h"
 #include "JsonSerializer.h"
-#include "ThreadManager.h"
 #include "Uid.h"
 
 namespace scaf {  // Smart Contracting Agents Framework
@@ -42,9 +42,8 @@ public:
     }
 
     void start() {
-        threadManager.add([&, this] { work(); });
-        threadManager.add([&, this] { listenForMessages(); });
-        threadManager.wait();
+        std::jthread communicationThread([&, this] { listenForMessages(); });
+        work();
     }
 
     using AgentBehaviour = _Behaviour;
@@ -68,7 +67,6 @@ protected:
     _CommunicationHandler communicationHandler;
     _ErrorHandler errorHandler;
     ConversationHandler<Agent> conversationHandler;
-    ThreadManager threadManager;
 
 private:
     // it is recommended to use sendMessage member function over direct communicationHandler call
