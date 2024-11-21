@@ -21,6 +21,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   Threads::Threads
 )
 
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Wnon-virtual-dtor)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 
 add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})
