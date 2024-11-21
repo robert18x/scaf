@@ -83,12 +83,14 @@ private:
         message.sender = name;
         message.receiver = uid.sender;
         message.conversationId = uid.conversationId;
+
         std::expected data = serializer.serialize(message);
-        if (data.has_value()) {
-            communicationHandler.send(data.value());
-        } else {
-            errorHandler.handle(data.error());
-        }
+        if (!data.has_value())
+            return errorHandler.handle(data.error());
+
+        std::expected sentStatus = communicationHandler.send(data.value());
+        if (!sentStatus.has_value()) 
+            return errorHandler.handle(sentStatus.error());
     }
 
     virtual void work() = 0;
@@ -98,8 +100,11 @@ private:
 
     void listenForMessages() {
         while(not finnished()) {
-            std::string data = communicationHandler.receive();
-            handleData(data);
+            std::expected<std::string, Error> received = communicationHandler.receive();
+            if (received.has_value())
+                handleData(received.value());
+            else
+                errorHandler.handle(received.error());
         }
     }
 

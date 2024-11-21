@@ -40,11 +40,12 @@ public:
 
 class DefaultCommunicationHandler : public scaf::CommunicationHandler {
 public:
-    void send(const std::string& data) override {
+    std::expected<void, scaf::Error> send(const std::string& data) override {
         std::cout << data << std::endl;  // TODO
+        return std::expected<void, scaf::Error>();
     }
 
-    std::string receive() override {
+    std::expected<std::string, scaf::Error> receive() override {
         scaf::AclMessage message{
             .performative = scaf::Performative::propose,
             .sender = "test_agent",
