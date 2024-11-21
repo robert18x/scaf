@@ -41,7 +41,7 @@ struct AclMessageBuilder {
     std::optional<std::string> inReplayTo = std::nullopt;
     std::optional<std::chrono::system_clock::time_point> replayBy = std::nullopt;
 
-    operator AclMessage() {
+    operator AclMessage() const {
         return AclMessage{
             .performative = this->performative,
             .sender = {},
