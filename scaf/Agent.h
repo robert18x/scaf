@@ -23,7 +23,16 @@ template <typename _Behaviour, typename _CommunicationHandler, typename _ErrorHa
              std::derived_from<_ErrorHandler, ErrorHandler>
 class Agent {
 public:
-    explicit Agent(const std::string& name) : name(name), conversationHandler(this) {}
+    explicit Agent(const std::string& name)
+        : name(name)
+        , conversationHandler(this) {}
+
+    explicit Agent(const std::string& name, _CommunicationHandler&& communicationHandler, _ErrorHandler&& errorHandler)
+        : name(name)
+        , communicationHandler(std::move(communicationHandler))
+        , errorHandler(std::move(errorHandler))
+        , conversationHandler(this) {}
+
     virtual ~Agent() = default;
     Agent(const Agent&) = delete;
     Agent(Agent&&) = delete;
