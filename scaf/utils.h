@@ -34,7 +34,7 @@ constexpr auto safeCall(std::invocable auto&& callable, std::source_location sl 
     try {
         if constexpr (!is_specialization<std::remove_cvref_t<decltype(callable())>, std::expected>::value and std::is_same_v<decltype(callable()), void>) {
             callable();
-            return std::expected<void, Error>();
+            return {};
         } else {
             return callable();
         }
