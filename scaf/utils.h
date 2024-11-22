@@ -14,7 +14,7 @@
 
 namespace scaf::utils {
 
-bool compareStringsLowercase(std::string_view first, std::string_view second) {
+constexpr bool compareStringsLowercase(std::string_view first, std::string_view second) {
     auto toLower = std::views::transform([](auto c) { return std::tolower(c); });
     return std::ranges::equal(first | toLower, second | toLower);
 }
@@ -26,7 +26,7 @@ template<template<typename...> class Ref, typename... Args>
 struct is_specialization<Ref<Args...>, Ref> : std::true_type {};
 
 template <RetCode errorCode = RetCode::generic_error>
-auto safeCall(std::invocable auto&& callable, std::source_location sl = std::source_location::current()) -> 
+constexpr auto safeCall(std::invocable auto&& callable, std::source_location sl = std::source_location::current()) -> 
     std::conditional_t<is_specialization<std::remove_cvref_t<decltype(callable())>, std::expected>::value, 
         std::remove_cvref_t<decltype(callable())>,
         std::expected<std::remove_cv_t<decltype(callable())>, Error>
