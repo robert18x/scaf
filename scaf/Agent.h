@@ -37,9 +37,9 @@ public:
     Agent(const Agent&) = delete;
     Agent(Agent&&) = delete;
 
-    void handleData(std::span<char> data) {
+    void handleData(Data data) {
         auto ret = utils::safeCall([&]{
-            std::expected message = serializer.deserialize(data);
+            std::expected message = serializer.deserialize(data.data);
             if (message.has_value())
                 conversationHandler.handleMessage(message.value());
             else
@@ -88,7 +88,7 @@ private:
         if (!data.has_value())
             return errorHandler.handle(data.error());
 
-        std::expected sentStatus = communicationHandler.send(data.value());
+        std::expected sentStatus = communicationHandler.send(uid.sender, data.value());
         if (!sentStatus.has_value()) 
             return errorHandler.handle(sentStatus.error());
     }
@@ -100,7 +100,7 @@ private:
 
     void listenForMessages() {
         while(not finnished()) {
-            std::expected<std::string, Error> received = communicationHandler.receive();
+            std::expected<Data, Error> received = communicationHandler.receive();
             if (received.has_value())
                 handleData(received.value());
             else

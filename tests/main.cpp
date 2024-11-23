@@ -40,12 +40,12 @@ public:
 
 class DefaultCommunicationHandler : public scaf::CommunicationHandler {
 public:
-    std::expected<void, scaf::Error> send(const std::string& data) override {
+    std::expected<void, scaf::Error> send([[maybe_unused]] const std::string& to, const std::string& data) override {
         std::cout << data << std::endl;  // TODO
         return std::expected<void, scaf::Error>();
     }
 
-    std::expected<std::string, scaf::Error> receive() override {
+    std::expected<scaf::Data, scaf::Error> receive() override {
         scaf::AclMessage message{
             .performative = scaf::Performative::propose,
             .sender = "test_agent",
@@ -57,7 +57,10 @@ public:
             .conversationId = 1,
         };
         nlohmann::json json = message;
-        return json.dump();
+        return scaf::Data{
+            .from = "test_agent",
+            .data = json.dump(),
+        };
     }
 };
 
@@ -90,7 +93,7 @@ private:
 };
 
 
-std::function<void(std::span<char>)> handler = nullptr;
+std::function<void(std::string)> handler = nullptr;
 
 void event() {
     static int i = 0;
@@ -110,14 +113,14 @@ void event() {
     std::string data = json.dump();
 
     if (handler) {
-        handler(std::span(data));
+        handler(data);
     }
 }
 
 int main() {
     std::unique_ptr<MyAgent> myAgent;
     myAgent = std::make_unique<MyAgent>("MyAgent");
-    handler = [&] (std::span<char> data) { myAgent->handleData(data); };
+    handler = [&] (const std::string& data) { myAgent->handleData(scaf::Data{.from={}, .data=data}); };
     myAgent->start();
     event();
 }
