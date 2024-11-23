@@ -51,7 +51,7 @@ public:
     }
 
     void start() {
-        std::jthread communicationThread([&, this] { listenForMessages(); });
+        std::jthread communicationThread([&] { listenForMessages(); });
         work();
     }
 
