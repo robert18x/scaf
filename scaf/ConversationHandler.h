@@ -43,7 +43,7 @@ public:
 
 private:
     std::shared_ptr<Conversation> createNewConversation(const UniqueConversationId& uid) {
-        std::unique_ptr<Conversation> conversation = correspondingAgent->createBehaviour(uid);
+        std::shared_ptr<Conversation> conversation = correspondingAgent->createBehaviour(uid);
         return activeConversations.emplace(auto{uid}, std::move(conversation));
     }
 
@@ -63,7 +63,6 @@ private:
     }
 
     decltype(AclMessage::conversationId) conversationIdGenerator = 0;
-    // std::map<UniqueConversationId, std::shared_ptr<Conversation>> activeConversations;
     SynchronizedMap<UniqueConversationId, std::shared_ptr<Conversation>> activeConversations;
     _Agent* correspondingAgent;
 };

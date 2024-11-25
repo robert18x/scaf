@@ -108,13 +108,13 @@ private:
         }
     }
 
-    virtual std::unique_ptr<_Behaviour> createBehaviour(UniqueConversationId uid) {
+    virtual std::shared_ptr<_Behaviour> createBehaviour(UniqueConversationId uid) {
         static_assert(std::derived_from<typename _Behaviour::Agent, Agent>);
         if constexpr (std::is_same_v<typename _Behaviour::Agent, std::remove_cvref_t<decltype(*this)>>) {
-            return std::make_unique<_Behaviour>(this, uid);
+            return std::make_shared<_Behaviour>(this, uid);
         } else {
             auto* agentSpecialization = static_cast<typename _Behaviour::Agent*>(this);
-            return std::make_unique<_Behaviour>(agentSpecialization, uid);
+            return std::make_shared<_Behaviour>(agentSpecialization, uid);
         }
     }
 };
