@@ -62,8 +62,9 @@ protected:
         return conversationHandler.createNewConversation(receiver);
     }
 
-    virtual void sendMessage(AclMessage&& message, const _Behaviour& behaviour) {
-        sendMessage(std::forward<AclMessage>(message), behaviour.getUid());
+    // it is recommended to use sendMessage member function over direct communicationHandler call
+    virtual std::expected<void, Error> sendMessage(AclMessage&& message, const _Behaviour& behaviour) {
+        return sendMessage(std::forward<AclMessage>(message), behaviour.getUid());
     }
 
     friend class ConversationHandler<Agent>;
@@ -78,19 +79,18 @@ protected:
     ConversationHandler<Agent> conversationHandler;
 
 private:
-    // it is recommended to use sendMessage member function over direct communicationHandler call
-    virtual void sendMessage(AclMessage&& message, UniqueConversationId uid) {
+    virtual std::expected<void, Error> sendMessage(AclMessage&& message, UniqueConversationId uid) {
         message.sender = name;
         message.receiver = uid.sender;
         message.conversationId = uid.conversationId;
 
-        std::expected data = serializer.serialize(message);
-        if (!data.has_value())
-            return errorHandler.handle(data.error());
+        std::expected status = serializer.serialize(message)
+            .and_then([&](const std::string& data){ return communicationHandler.send(uid.sender, data); });
 
-        std::expected sentStatus = communicationHandler.send(uid.sender, data.value());
-        if (!sentStatus.has_value()) 
-            return errorHandler.handle(sentStatus.error());
+        if (not status.has_value())
+            errorHandler.handle(status.error());
+
+        return status;
     }
 
     virtual void work() = 0;
