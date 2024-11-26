@@ -32,7 +32,6 @@ struct AclMessage {
 
 struct AclMessageBuilder {
     Performative performative;
-    std::string receiver;
     std::optional<std::string> replayTo = std::nullopt;
     nlohmann::json content;
     std::optional<std::string> ontology = std::nullopt;
@@ -45,7 +44,7 @@ struct AclMessageBuilder {
         return AclMessage{
             .performative = this->performative,
             .sender = {},
-            .receiver = std::move(this->receiver),
+            .receiver = {},
             .replayTo = std::move(this->replayTo),
             .content = std::move(this->content),
             .language = {},
