@@ -24,7 +24,7 @@ struct AclMessage {
     std::uint64_t conversationId{};  // is set automatically, manual setting has no affect
     std::optional<std::string> replayWith = std::nullopt;
     std::optional<std::string> inReplayTo = std::nullopt;
-    std::optional<std::chrono::system_clock::time_point> replayBy = std::nullopt;
+    std::optional<std::chrono::system_clock::time_point> replyBy = std::nullopt;
 
     static_assert(std::is_same_v<std::remove_cvref_t<decltype(sender)>, std::remove_cvref_t<decltype(receiver)>>);
 };
@@ -39,7 +39,7 @@ struct AclMessageBuilder {
     std::string protocol;
     std::optional<std::string> replayWith = std::nullopt;
     std::optional<std::string> inReplayTo = std::nullopt;
-    std::optional<std::chrono::system_clock::time_point> replayBy = std::nullopt;
+    std::optional<std::chrono::system_clock::time_point> replyBy = std::nullopt;
 
     operator AclMessage() const {
         return AclMessage{
@@ -55,11 +55,11 @@ struct AclMessageBuilder {
             .conversationId = {},
             .replayWith = std::move(this->replayWith),
             .inReplayTo =std::move(this->inReplayTo),
-            .replayBy = std::move(this->replayBy)
+            .replyBy = std::move(this->replyBy)
         };
     }
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AclMessage, performative, sender, receiver, replayTo, content, language, encoding, ontology, protocol, conversationId, replayWith, inReplayTo, replayBy);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AclMessage, performative, sender, receiver, replayTo, content, language, encoding, ontology, protocol, conversationId, replayWith, inReplayTo, replyBy);
 
 }
