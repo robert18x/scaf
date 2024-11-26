@@ -1,15 +1,17 @@
 #pragma once
+#include <atomic>
 #include <cassert>
+#include <expected>
 #include <functional>
 #include <map>
 #include <memory>
 #include <utility>
-#include <expected>
-#include "Error.h"
-#include "utils.h"
+
 #include "AclMessage.h"
+#include "Error.h"
 #include "SynchronizedMap.h"
 #include "Uid.h"
+#include "utils.h"
 
 namespace scaf {
 
@@ -20,6 +22,7 @@ public:
 
 private:
     using Conversation = _Agent::AgentBehaviour;
+    friend _Agent;
 
 public:
     void handleMessage(const AclMessage& message) {
@@ -58,12 +61,12 @@ private:
             removeConversation(uid);
     }
 
-    constexpr auto generateConversationId() {
+    constexpr decltype(AclMessage::conversationId) generateConversationId() {
         return conversationIdGenerator++;
     }
 
-    decltype(AclMessage::conversationId) conversationIdGenerator = 0;
     SynchronizedMap<UniqueConversationId, std::shared_ptr<Conversation>> activeConversations;
+    std::atomic<decltype(AclMessage::conversationId)> conversationIdGenerator = 0;
     _Agent* correspondingAgent;
 };
 

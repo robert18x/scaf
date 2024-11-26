@@ -63,13 +63,21 @@ protected:
     }
 
     // it is recommended to use sendMessage member function over direct communicationHandler call
-    virtual std::expected<void, Error> sendMessage(AclMessage&& message, const _Behaviour& behaviour) {
-        return sendMessage(std::forward<AclMessage>(message), behaviour.getUid());
+    std::expected<void, Error> sendMessage(AclMessage&& message, const _Behaviour& behaviour) {
+        UniqueConversationId uid = behaviour.getUid();
+        message.receiver = uid.sender;
+        message.conversationId = uid.conversationId;
+        return send(uid.sender, std::move(message));
+    }
+
+    std::expected<void, Error> sendMessage(const std::string& to, AclMessage&& message) {
+        message.conversationId = conversationHandler.generateConversationId();
+        return send(to, std::move(message));
     }
 
     friend class ConversationHandler<Agent>;
     friend _Behaviour;
-    
+
     using Super = Agent<_Behaviour, _CommunicationHandler, _ErrorHandler>;
 
     const std::string name;
@@ -79,24 +87,21 @@ protected:
     ConversationHandler<Agent> conversationHandler;
 
 private:
-    virtual std::expected<void, Error> sendMessage(AclMessage&& message, UniqueConversationId uid) {
-        message.sender = name;
-        message.receiver = uid.sender;
-        message.conversationId = uid.conversationId;
 
+    virtual void work() = 0;
+
+    virtual bool finnished() = 0;
+
+    std::expected<void, Error> send(const std::string& to, AclMessage&& message) {
+        message.sender = name;
         std::expected status = serializer.serialize(message)
-            .and_then([&](const std::string& data){ return communicationHandler.send(uid.sender, data); });
+            .and_then([&](const std::string& data){ return communicationHandler.send(to, data); });
 
         if (not status.has_value())
             errorHandler.handle(status.error());
 
         return status;
     }
-
-    virtual void work() = 0;
-
-    virtual bool finnished() = 0;
-
 
     void listenForMessages() {
         while(not finnished()) {
