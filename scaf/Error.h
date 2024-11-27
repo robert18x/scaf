@@ -9,6 +9,7 @@ namespace scaf {
         serialization_error,
         deserialization_error,
         generic_error,
+        reason,
     };
 
     class Error {
