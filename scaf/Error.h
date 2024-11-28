@@ -10,6 +10,8 @@ namespace scaf {
         deserialization_error,
         generic_error,
         reason,
+        no_values,
+        invalid_answer,
     };
 
     class Error {
