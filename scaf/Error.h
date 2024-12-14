@@ -12,6 +12,7 @@ namespace scaf {
         reason,
         no_values,
         invalid_answer,
+        expired_message,
     };
 
     class Error {
