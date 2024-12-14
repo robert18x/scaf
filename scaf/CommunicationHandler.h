@@ -1,6 +1,9 @@
 #pragma once
 
+#include <expected>
 #include <string>
+
+#include "Error.h"
 
 namespace scaf {
 struct Data {
