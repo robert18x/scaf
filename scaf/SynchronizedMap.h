@@ -4,6 +4,8 @@
 #include <optional>
 #include <utility>
 
+namespace scaf {
+
 template <typename Key, typename Value>
 class SynchronizedMap {
 public:
@@ -32,3 +34,4 @@ private:
     std::mutex accessMutex;
 };
     
+}
