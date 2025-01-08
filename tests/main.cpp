@@ -81,7 +81,7 @@ private:
         std::cout << behaviour->data << std::endl;
     }
 
-    bool finnished() override {
+    bool finished() override {
         static bool firstTime = true;
         if (firstTime) {
             firstTime = false;

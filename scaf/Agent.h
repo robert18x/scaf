@@ -90,7 +90,7 @@ private:
 
     virtual void work() = 0;
 
-    virtual bool finnished() = 0;
+    virtual bool finished() = 0;
 
     std::expected<void, Error> send(const std::string& to, AclMessage&& message) {
         message.sender = name;
@@ -104,7 +104,7 @@ private:
     }
 
     void listenForMessages() {
-        while(not finnished()) {
+        while(not finished()) {
             std::expected<Data, Error> received = communicationHandler.receive();
             if (received.has_value())
                 handleData(received.value());
