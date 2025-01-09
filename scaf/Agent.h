@@ -112,13 +112,16 @@ private:
 
     void listenForMessage() {
         std::expected<Data, Error> received = communicationHandler.receive();
-        if (finished())
-            return;
- 
-        if (received.has_value())
+
+        if (received.has_value()) {
             handleData(received.value());
-        else
-            errorHandler.handle(received.error());
+        } else {
+            Error error = received.error();
+            if (error.getRetCode() == RetCode::terminating)
+                return;
+
+            errorHandler.handle();
+        }
     }
 
     virtual std::shared_ptr<_Behaviour> createBehaviour(UniqueConversationId uid) {
