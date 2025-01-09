@@ -56,8 +56,7 @@ public:
             while(not finished())
                 listenForMessage();
         };
-        communicationThread = std::make_unique<std::thread>(listen);
-        communicationThread->detach();
+        communicationThread = std::make_unique<std::jthread>(listen);
     }
 
     using AgentBehaviour = _Behaviour;
@@ -90,7 +89,7 @@ protected:
     _CommunicationHandler communicationHandler;
     _ErrorHandler errorHandler;
     ConversationHandler<Agent> conversationHandler;
-    std::unique_ptr<std::thread> communicationThread;
+    std::unique_ptr<std::jthread> communicationThread;
 
 private:
 
