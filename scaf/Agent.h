@@ -120,7 +120,7 @@ private:
             if (error.getRetCode() == RetCode::terminating)
                 return;
 
-            errorHandler.handle();
+            errorHandler.handle(error);
         }
     }
 
