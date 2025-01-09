@@ -62,6 +62,8 @@ public:
             .data = json.dump(),
         };
     }
+
+    void stop() override {}
 };
 
 class DefaultErrorHandler : public scaf::ErrorHandler {

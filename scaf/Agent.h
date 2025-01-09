@@ -32,9 +32,11 @@ public:
         , communicationHandler(std::move(communicationHandler))
         , errorHandler(std::move(errorHandler))
         , conversationHandler(this)
-        , communicationThread(nullptr) {}
+        , listeningThread(nullptr) {}
 
-    virtual ~Agent() = default;
+    virtual ~Agent() {
+        communicationHandler.stop();
+    }
     Agent(const Agent&) = delete;
     Agent(Agent&&) = delete;
 
@@ -56,7 +58,7 @@ public:
             while(not finished())
                 listenForMessage();
         };
-        communicationThread = std::make_unique<std::jthread>(listen);
+        listeningThread = std::make_unique<std::jthread>(listen);
     }
 
     using AgentBehaviour = _Behaviour;
@@ -89,7 +91,7 @@ protected:
     _CommunicationHandler communicationHandler;
     _ErrorHandler errorHandler;
     ConversationHandler<Agent> conversationHandler;
-    std::unique_ptr<std::jthread> communicationThread;
+    std::unique_ptr<std::jthread> listeningThread;
 
 private:
 
