@@ -26,6 +26,7 @@ public:
 
     std::expected<void, scaf::Error> handleReceivedMessage(const scaf::AclMessage& m) override {
         std::cout << agent->name << ": " << "Got AclMessage - " << m.content << std::endl;
+        agent->setFinished();
         return {};
     }
 
@@ -81,9 +82,10 @@ private:
     void work() override {
         auto behaviour = createConversation("other_agent");
         std::cout << behaviour->data << std::endl;
+        setFinished();
     }
 
-    bool finished() override { 
+    bool finished() { 
         static bool firstTime = true;
         if (firstTime) {
             firstTime = false;

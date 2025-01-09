@@ -35,6 +35,7 @@ public:
         , listeningThread(nullptr) {}
 
     virtual ~Agent() {
+        setFinished();
         communicationHandler.stop();
     }
     Agent(const Agent&) = delete;
@@ -55,10 +56,18 @@ public:
 
     void startListening() {
         auto listen = [&] {
-            while(not finished())
+            while(not isFinished())
                 listenForMessage();
         };
         listeningThread = std::make_unique<std::jthread>(listen);
+    }
+
+    bool isFinished() {
+        return finished;
+    }
+
+    void setFinished() {
+        finished = true;
     }
 
     using AgentBehaviour = _Behaviour;
@@ -92,12 +101,11 @@ protected:
     _ErrorHandler errorHandler;
     ConversationHandler<Agent> conversationHandler;
     std::unique_ptr<std::jthread> listeningThread;
+    std::atomic_bool finished = false;
 
 private:
 
     virtual void work() = 0;
-
-    virtual bool finished() = 0;
 
     std::expected<void, Error> send(const std::string& to, AclMessage&& message) {
         message.sender = name;
