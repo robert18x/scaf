@@ -81,7 +81,7 @@ private:
         std::cout << behaviour->data << std::endl;
     }
 
-    bool finished() override {
+    bool finished() override { 
         static bool firstTime = true;
         if (firstTime) {
             firstTime = false;
@@ -121,6 +121,6 @@ int main() {
     std::unique_ptr<MyAgent> myAgent;
     myAgent = std::make_unique<MyAgent>("MyAgent");
     handler = [&] (const std::string& data) { myAgent->handleData(scaf::Data{.from={}, .data=data}); };
-    myAgent->start();
+    myAgent->startListening();
     event();
 }

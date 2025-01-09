@@ -31,7 +31,8 @@ public:
         : name(name)
         , communicationHandler(std::move(communicationHandler))
         , errorHandler(std::move(errorHandler))
-        , conversationHandler(this) {}
+        , conversationHandler(this)
+        , communicationThread(nullptr) {}
 
     virtual ~Agent() = default;
     Agent(const Agent&) = delete;
@@ -50,9 +51,13 @@ public:
         }
     }
 
-    void start() {
-        std::jthread communicationThread([&] { listenForMessages(); });
-        work();
+    void startListening() {
+        auto listen = [&] {
+            while(not finished())
+                listenForMessage();
+        };
+        communicationThread = std::make_unique<std::thread>(listen);
+        communicationThread->detach();
     }
 
     using AgentBehaviour = _Behaviour;
@@ -85,6 +90,7 @@ protected:
     _CommunicationHandler communicationHandler;
     _ErrorHandler errorHandler;
     ConversationHandler<Agent> conversationHandler;
+    std::unique_ptr<std::thread> communicationThread;
 
 private:
 
@@ -103,14 +109,15 @@ private:
         return status;
     }
 
-    void listenForMessages() {
-        while(not finished()) {
-            std::expected<Data, Error> received = communicationHandler.receive();
-            if (received.has_value())
-                handleData(received.value());
-            else
-                errorHandler.handle(received.error());
-        }
+    void listenForMessage() {
+        std::expected<Data, Error> received = communicationHandler.receive();
+        if (finished())
+            return;
+ 
+        if (received.has_value())
+            handleData(received.value());
+        else
+            errorHandler.handle(received.error());
     }
 
     virtual std::shared_ptr<_Behaviour> createBehaviour(UniqueConversationId uid) {
