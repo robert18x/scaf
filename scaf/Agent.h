@@ -90,6 +90,10 @@ protected:
         return send(to, std::move(message));
     }
 
+    virtual std::string getMessageReceiver(const AclMessage& message) {
+        return message.receiver;
+    }
+
     friend class ConversationHandler<Agent>;
     friend _Behaviour;
 
@@ -110,7 +114,7 @@ private:
     std::expected<void, Error> send(const std::string& to, AclMessage&& message) {
         message.sender = name;
         std::expected status = serializer.serialize(message)
-            .and_then([&](const std::string& data){ return communicationHandler.send(to, data); });
+            .and_then([&](const std::string& data){ return communicationHandler.send(getMessageReceiver(message), data); });
 
         if (not status.has_value())
             errorHandler.handle(status.error());
