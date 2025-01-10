@@ -72,14 +72,13 @@ namespace nlohmann {
 template <typename Clock, typename Duration>
 struct adl_serializer<std::chrono::time_point<Clock, Duration>> {
     static void to_json(json& j, const std::chrono::time_point<Clock, Duration>& tp) {
-        j = std::chrono::duration_cast<std::chrono::microseconds>(tp.time_since_epoch()).count();
+        j = tp.time_since_epoch().count();
     }
 
     static void from_json(const json& j, std::chrono::time_point<Clock, Duration>& tp) {
         if (j.is_null()) {
-            auto ms_since_epoch = j.template get<std::int64_t>();
-            Duration since_epoch = std::chrono::duration_cast<Duration>(std::chrono::microseconds(ms_since_epoch));
-            tp = std::chrono::time_point<Clock, Duration>(since_epoch);
+            auto since_epoch = j.template get<std::int64_t>();
+            tp = std::chrono::time_point<Clock, Duration>(Duration(since_epoch));
         }
     }
 };
