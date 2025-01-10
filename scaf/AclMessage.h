@@ -27,6 +27,7 @@ struct AclMessage {
     std::optional<std::chrono::system_clock::time_point> replyBy = std::nullopt;
 
     static_assert(std::is_same_v<std::remove_cvref_t<decltype(sender)>, std::remove_cvref_t<decltype(receiver)>>);
+    auto operator<=>(const scaf::AclMessage&) const noexcept = default;
 };
 
 

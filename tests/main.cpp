@@ -1,21 +1,23 @@
 #include <fmt/format.h>
 
+#include <cassert>
 #include <chrono>
 #include <concepts>
 #include <iostream>
+#include <magic_enum.hpp>
 #include <map>
 #include <memory>
 #include <nlohmann/json.hpp>
-#include "Agent.h"
-#include "Behaviour.h"
 #include <optional>
 #include <ranges>
 #include <span>
 #include <type_traits>
 #include <unordered_map>
-#include <magic_enum.hpp>
-#include "Uid.h"
 
+#include "Agent.h"
+#include "Behaviour.h"
+#include "JsonSerializer.h"
+#include "Uid.h"
 
 template <typename _Agent>
 class ResponseWithTemperatureBehaviour : public scaf::Behaviour<_Agent> {
@@ -121,7 +123,66 @@ void event() {
     }
 }
 
+
+void testJsonSerialization() {
+    using namespace scaf;
+
+    {
+        AclMessage message{
+            .performative = Performative::inform,
+            .sender = "sender",
+            .receiver = "receiver",
+            .replayTo = "replayTo",
+            .content = "content",
+            .language = "json",
+            .encoding = "utf-8",
+            .ontology = "FIPA ACL",
+            .protocol = "CNP",
+            .conversationId = 1234567890u,
+            .replayWith = "replayWith",
+            .inReplayTo = "inReplayTo",
+            .replyBy = std::chrono::system_clock::now()
+        };
+        
+        JsonSerializer serializer;
+
+        std::expected<std::string, Error> serialized = serializer.serialize(message);
+        assert(serialized.has_value());
+
+        std::expected<AclMessage, Error> deserialized = serializer.deserialize(serialized.value());
+        assert(deserialized.has_value());
+        
+        AclMessage message2 = deserialized.value();
+        assert(message == message2);
+    }
+
+    {
+        AclMessage message = AclMessageBuilder{
+            .performative = Performative::inform,
+            .replayTo = "replayTo",
+            .content = "content",
+            .protocol = "CNP",
+            .inReplayTo = "inReplayTo",
+            .replyBy = std::chrono::system_clock::now()
+        };
+        
+        JsonSerializer serializer;
+
+        std::expected<std::string, Error> serialized = serializer.serialize(message);
+        assert(serialized.has_value());
+
+        std::expected<AclMessage, Error> deserialized = serializer.deserialize(serialized.value());
+        assert(deserialized.has_value());
+        
+        AclMessage message2 = deserialized.value();
+        assert(message == message2);
+    }
+}
+
+
 int main() {
+    testJsonSerialization();
+
     std::unique_ptr<MyAgent> myAgent;
     myAgent = std::make_unique<MyAgent>("MyAgent");
     handler = [&] (const std::string& data) { myAgent->handleData(scaf::Data{.from={}, .data=data}); };
