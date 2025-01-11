@@ -9,6 +9,8 @@ namespace scaf {
 template <typename Key, typename Value, template<typename, typename> typename UnderlyingType = std::map>
 class SynchronizedMap {
 public:
+    virtual ~SynchronizedMap() = default;
+
     constexpr std::optional<Value> get(const Key& key) {
         std::scoped_lock guard(accessMutex);
         if (auto it = activeConversations.find(key); it != activeConversations.end()){
