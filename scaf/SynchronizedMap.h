@@ -40,7 +40,7 @@ public:
         return iterator->second;
     }
 
-private:
+protected:
     UnderlyingType<Key, Value> activeConversations;
     std::mutex accessMutex;
 };
