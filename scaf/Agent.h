@@ -78,16 +78,16 @@ protected:
     }
 
     // it is recommended to use sendMessage member function over direct communicationHandler call
-    std::expected<void, Error> sendMessage(AclMessage&& message, const _Behaviour& behaviour) {
+    std::expected<void, Error> sendMessage(const _Behaviour& behaviour, AclMessage&& message) {
         UniqueConversationId uid = behaviour.getUid();
         message.receiver = uid.sender;
         message.conversationId = uid.conversationId;
-        return send(uid.sender, std::move(message));
+        return send(std::move(message));
     }
 
-    std::expected<void, Error> sendMessage(const std::string& to, AclMessage&& message) {
+    std::expected<void, Error> sendMessage(AclMessage&& message) {
         message.conversationId = conversationHandler.generateConversationId();
-        return send(to, std::move(message));
+        return send(std::move(message));
     }
 
     virtual std::string getMessageReceiver(const AclMessage& message) {
@@ -111,7 +111,7 @@ private:
 
     virtual void work() = 0;
 
-    std::expected<void, Error> send(const std::string& to, AclMessage&& message) {
+    std::expected<void, Error> send(AclMessage&& message) {
         message.sender = name;
         std::expected status = serializer.serialize(message)
             .and_then([&](const std::string& data){ return communicationHandler.send(getMessageReceiver(message), data); });
