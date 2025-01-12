@@ -31,7 +31,7 @@ protected:
 
     constexpr virtual std::expected<void, Error> handleReceivedMessageImpl(const AclMessage&) = 0;
 
-    auto sendMessage(scaf::AclMessage&& message) {
+    std::expected<void, Error> sendMessage(scaf::AclMessage&& message) {
         message.inReplyTo = std::exchange(nextReplyWith, std::nullopt);
         return agent->sendMessage(*this, std::move(message));
     }
