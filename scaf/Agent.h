@@ -78,7 +78,7 @@ protected:
     }
 
     // it is recommended to use sendMessage member function over direct communicationHandler call
-    std::expected<void, Error> sendMessage(const _Behaviour& behaviour, AclMessage&& message) {
+    std::expected<void, Error> sendMessage(const Behaviour<typename AgentBehaviour::Agent>& behaviour, AclMessage&& message) {
         UniqueConversationId uid = behaviour.getUid();
         message.receiver = uid.sender;
         message.conversationId = uid.conversationId;
