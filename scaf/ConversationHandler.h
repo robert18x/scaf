@@ -36,7 +36,7 @@ public:
     }
 
     std::shared_ptr<Conversation> createNewConversation(const decltype(AclMessage::receiver)& receiver) {
-        UniqueConversationId uid(conversationIdGenerator++, receiver);
+        UniqueConversationId uid(generateConversationId(), receiver);
         return createNewConversation(uid);
     }
 
@@ -59,6 +59,10 @@ private:
         }
         if (conversation.isFinished())  // if is finished, also remove conversation
             removeConversation(uid);
+    }
+
+    constexpr decltype(AclMessage::conversationId) generateConversationId() {
+        return conversationIdGenerator++;
     }
 
     SynchronizedMap<UniqueConversationId, std::shared_ptr<Conversation>> activeConversations;
