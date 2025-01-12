@@ -61,7 +61,7 @@ private:
             removeConversation(uid);
     }
 
-    constexpr decltype(AclMessage::conversationId) generateConversationId() {
+    constexpr decltype(AclMessage::conversationId) generateConversationId() volatile {
         return conversationIdGenerator++;
     }
 
