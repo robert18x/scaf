@@ -96,6 +96,7 @@ protected:
 
     friend class ConversationHandler<Agent>;
     friend _Behaviour;
+    friend Behaviour<typename AgentBehaviour::Agent>;
 
     using Super = Agent<_Behaviour, _CommunicationHandler, _ErrorHandler>;
 
