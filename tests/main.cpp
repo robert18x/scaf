@@ -132,15 +132,15 @@ void testJsonSerialization() {
             .performative = Performative::inform,
             .sender = "sender",
             .receiver = "receiver",
-            .replayTo = "replayTo",
+            .replyTo = "replayTo",
             .content = "content",
             .language = "json",
             .encoding = "utf-8",
             .ontology = "FIPA ACL",
             .protocol = "CNP",
             .conversationId = 1234567890u,
-            .replayWith = "replayWith",
-            .inReplayTo = "inReplayTo",
+            .replyWith = "replayWith",
+            .inReplyTo = "inReplayTo",
             .replyBy = std::chrono::system_clock::now()
         };
         
@@ -159,10 +159,10 @@ void testJsonSerialization() {
     {
         AclMessage message = AclMessageBuilder{
             .performative = Performative::inform,
-            .replayTo = "replayTo",
+            .replyTo = "replayTo",
             .content = "content",
             .protocol = "CNP",
-            .inReplayTo = "inReplayTo",
+            .inReplyTo = "inReplayTo",
             .replyBy = std::chrono::system_clock::now()
         };
         
