@@ -26,7 +26,7 @@ public:
 
     using scaf::Behaviour<_Agent>::agent;
 
-    std::expected<void, scaf::Error> handleReceivedMessage(const scaf::AclMessage& m) override {
+    std::expected<void, scaf::Error> handleReceivedMessageImpl(const scaf::AclMessage& m) override {
         std::cout << agent->name << ": " << "Got AclMessage - " << m.content << std::endl;
         agent->setFinished();
         return {};

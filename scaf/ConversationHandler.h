@@ -57,7 +57,7 @@ private:
             correspondingAgent->errorHandler.handle(ret.error());
             removeConversation(uid);
         }
-        if (conversation.isFinished())  // if is finished also remove conversation
+        if (conversation.isFinished())  // if is finished, also remove conversation
             removeConversation(uid);
     }
 

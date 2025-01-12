@@ -1,23 +1,26 @@
 #pragma once
-#include "ConversationHandler.h"
-#include <future>
 #include <expected>
-#include "Uid.h"
+
+#include "ConversationHandler.h"
 #include "Error.h"
+#include "Uid.h"
 
 namespace scaf {
 
 template <typename _Agent>
 class Behaviour {
 public:
-    explicit constexpr Behaviour(_Agent* agent, UniqueConversationId uid) : agent(agent), uid(uid) {}
+    explicit constexpr Behaviour(_Agent* agent, UniqueConversationId uid) : uid(uid), agent(agent) {}
     explicit constexpr Behaviour(const Behaviour&) = default;
-    constexpr Behaviour(Behaviour&& o) : agent(o.agent), uid(std::move(o.uid)) {
+    constexpr Behaviour(Behaviour&& o) : uid(std::move(o.uid)), agent(o.agent) {
         o.agent = nullptr;
     }
     constexpr virtual ~Behaviour() = default;
 
-    constexpr virtual std::expected<void, Error> handleReceivedMessage(const AclMessage&) = 0;
+    constexpr std::expected<void, Error> handleReceivedMessage(const AclMessage& message) {
+        nextReplyWith = message.replyWith;
+        return handleReceivedMessageImpl(message);
+    }
 
     constexpr virtual bool isFinished() = 0;
     using Agent = _Agent;
@@ -25,11 +28,20 @@ public:
     constexpr UniqueConversationId getUid() const { return uid; }
 
 protected:
+
+    constexpr virtual std::expected<void, Error> handleReceivedMessageImpl(const AclMessage&) = 0;
+
+    auto sendMessage(scaf::AclMessage&& message) {
+        message.inReplyTo = std::exchange(nextReplyWith, std::nullopt);
+        return agent->sendMessage(*this, std::move(message));
+    }
+
     template <typename T>
     friend class ConversationHandler;
 
-    _Agent* agent;
     UniqueConversationId uid;
+    std::optional<std::string> nextReplyWith;
+    _Agent* agent;
 };
 
 }
