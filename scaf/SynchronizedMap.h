@@ -13,7 +13,7 @@ public:
 
     constexpr std::optional<Value> get(const Key& key) {
         std::scoped_lock guard(accessMutex);
-        if (auto it = activeConversations.find(key); it != activeConversations.end()){
+        if (auto it = map.find(key); it != map.end()){
             return it->second;
         } else {
             return std::nullopt;
@@ -22,9 +22,9 @@ public:
 
     constexpr std::optional<Value> getAndErase(const Key& key) {
         std::scoped_lock guard(accessMutex);
-        if (auto it = activeConversations.find(key); it != activeConversations.end()){
+        if (auto it = map.find(key); it != map.end()){
             auto tmp = std::move(it->second);
-            activeConversations.erase(it);
+            map.erase(it);
             return tmp;
         } else {
             return std::nullopt;
@@ -33,17 +33,21 @@ public:
 
     constexpr void erase(const Key& key) {
         std::scoped_lock guard(accessMutex);
-        activeConversations.erase(key);
+        map.erase(key);
     }
 
     constexpr auto emplace(Key&& key, Value&& value) {
         std::scoped_lock guard(accessMutex);
-        [[maybe_unused]] auto [iterator, inserted] = activeConversations.emplace(std::forward<Key>(key), std::forward<Value>(value));
+        [[maybe_unused]] auto [iterator, inserted] = map.emplace(std::forward<Key>(key), std::forward<Value>(value));
         return iterator->second;
     }
 
+    constexpr bool contains(const Key& key) {
+        return map.contains(key);
+    }
+
 protected:
-    UnderlyingType<Key, Value> activeConversations;
+    UnderlyingType<Key, Value> map;
     std::mutex accessMutex;
 };
     
