@@ -1,13 +1,13 @@
 #pragma once
+#include "Performative.h"
+#include "utils.h"
+
 #include <chrono>
 #include <cinttypes>
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <string>
 #include <type_traits>
-
-#include "Performative.h"
-#include "utils.h"
 
 namespace scaf {
 

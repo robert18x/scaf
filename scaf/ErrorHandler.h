@@ -1,7 +1,7 @@
 #pragma once
+#include "Error.h"
 
 #include <string>
-#include "Error.h" 
 
 namespace scaf {
 

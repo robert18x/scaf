@@ -1,16 +1,19 @@
 #pragma once
+#include "Error.h"
+
+#include <fmt/format.h>
+#include <nlohmann/json.hpp>
+
 #include <cctype>
 #include <chrono>
-#include <nlohmann/json.hpp>
-#include <optional>
-#include <ranges>
-#include <type_traits>
-#include <string>
-#include <string_view>
 #include <concepts>
 #include <expected>
+#include <optional>
+#include <ranges>
 #include <source_location>
-#include "Error.h"
+#include <string>
+#include <string_view>
+#include <type_traits>
 
 namespace scaf::utils {
 

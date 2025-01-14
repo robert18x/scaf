@@ -1,17 +1,17 @@
 #pragma once
 
-#include <fmt/format.h>
+#include "AclMessage.h"
+#include "Error.h"
+#include "utils.h"
 
+#include <fmt/format.h>
 #include <nlohmann/json.hpp>
+
+#include <cctype>
+#include <expected>
+#include <ranges>
 #include <span>
 #include <string>
-#include <expected>
-#include <cctype>
-#include <ranges>
-
-#include "AclMessage.h"
-#include "utils.h"
-#include "Error.h"
 
 namespace scaf {
 

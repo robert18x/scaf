@@ -1,4 +1,11 @@
 #pragma once
+
+#include "AclMessage.h"
+#include "Error.h"
+#include "SynchronizedMap.h"
+#include "Uid.h"
+#include "utils.h"
+
 #include <atomic>
 #include <cassert>
 #include <expected>
@@ -6,12 +13,6 @@
 #include <map>
 #include <memory>
 #include <utility>
-
-#include "AclMessage.h"
-#include "Error.h"
-#include "SynchronizedMap.h"
-#include "Uid.h"
-#include "utils.h"
 
 namespace scaf {
 

@@ -1,4 +1,12 @@
 #pragma once
+#include "AclMessage.h"
+#include "Behaviour.h"
+#include "CommunicationHandler.h"
+#include "ConversationHandler.h"
+#include "ErrorHandler.h"
+#include "JsonSerializer.h"
+#include "Uid.h"
+
 #include <cassert>
 #include <concepts>
 #include <functional>
@@ -7,14 +15,6 @@
 #include <string>
 #include <thread>
 #include <type_traits>
-
-#include "AclMessage.h"
-#include "Behaviour.h"
-#include "CommunicationHandler.h"
-#include "ConversationHandler.h"
-#include "ErrorHandler.h"
-#include "JsonSerializer.h"
-#include "Uid.h"
 
 namespace scaf {  // Smart Contracting Agents Framework
 

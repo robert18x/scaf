@@ -1,9 +1,10 @@
 #pragma once
-#include <expected>
 
 #include "ConversationHandler.h"
 #include "Error.h"
 #include "Uid.h"
+
+#include <expected>
 
 namespace scaf {
 
