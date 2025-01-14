@@ -22,9 +22,9 @@ template <typename _Agent>
 class ConversationHandler {
 public:
     explicit ConversationHandler(_Agent* correspondingAgent) : correspondingAgent(correspondingAgent) {
-        std::random_device dev;
-        std::mt19937 rng(dev());
-        std::uniform_int_distribution<> distrib(0, std::numeric_limits<std::uint32_t>::max);
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> distrib(0, std::numeric_limits<int>::max());
         conversationIdGenerator = distrib(gen);
     }
 
