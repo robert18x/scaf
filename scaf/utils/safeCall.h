@@ -1,6 +1,8 @@
 #pragma once
 #include "../Error.h"
 
+#include <fmt/format.h>
+
 #include <concepts>
 #include <expected>
 #include <source_location>
