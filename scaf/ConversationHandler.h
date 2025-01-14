@@ -10,8 +10,10 @@
 #include <cassert>
 #include <expected>
 #include <functional>
+#include <limits>
 #include <map>
 #include <memory>
+#include <random>
 #include <utility>
 
 namespace scaf {
@@ -19,7 +21,12 @@ namespace scaf {
 template <typename _Agent>
 class ConversationHandler {
 public:
-    explicit ConversationHandler(_Agent* correspondingAgent) : correspondingAgent(correspondingAgent) {}
+    explicit ConversationHandler(_Agent* correspondingAgent) : correspondingAgent(correspondingAgent) {
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        std::uniform_int_distribution<> distrib(0, std::numeric_limits<std::uint32_t>::max);
+        conversationIdGenerator = distrib(gen);
+    }
 
 private:
     using Conversation = _Agent::AgentBehaviour;
@@ -71,7 +78,7 @@ private:
     }
 
     SynchronizedMap<UniqueConversationId, std::shared_ptr<Conversation>> activeConversations;
-    std::atomic<decltype(AclMessage::conversationId)> conversationIdGenerator = 0;
+    std::atomic<decltype(AclMessage::conversationId)> conversationIdGenerator;
     _Agent* correspondingAgent;
 };
 
