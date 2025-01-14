@@ -45,6 +45,10 @@ public:
         activeConversations.erase(uid);
     }
 
+    std::shared_ptr<Conversation> getConversation(const UniqueConversationId& uid) {
+        return activeConversations.get(uid).value_or(nullptr);
+    }
+
 private:
     std::shared_ptr<Conversation> createNewConversation(const UniqueConversationId& uid) {
         std::shared_ptr<Conversation> conversation = correspondingAgent->createBehaviour(uid);
