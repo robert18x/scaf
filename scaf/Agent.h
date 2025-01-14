@@ -42,7 +42,7 @@ public:
     Agent(Agent&&) = delete;
 
     void handleData(Data data) {
-        auto ret = utils::safeCall([&]{
+        auto ret = safeCall([&]{
             std::expected message = serializer.deserialize(data.data);
             if (message.has_value())
                 conversationHandler.handleMessage(message.value());

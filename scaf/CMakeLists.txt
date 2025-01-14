@@ -14,6 +14,8 @@ add_library(${PROJECT_NAME}
   Uid.h
   utils.h
   empty.cpp
+  utils/nlohman_json_serializers.h
+  utils/safeCall.h
 )
 
 find_package(nlohmann_json)

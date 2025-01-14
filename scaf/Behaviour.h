@@ -20,7 +20,7 @@ public:
 
     constexpr std::expected<void, Error> handleReceivedMessage(const AclMessage& message) {
         nextReplyWith = message.replyWith;
-        return utils::safeCall([&](){ return handleReceivedMessageImpl(message); });
+        return safeCall([&](){ return handleReceivedMessageImpl(message); });
     }
 
     constexpr virtual bool isFinished() = 0;

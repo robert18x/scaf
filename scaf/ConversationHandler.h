@@ -52,7 +52,7 @@ private:
     }
 
     void handleConversation(const UniqueConversationId& uid, Conversation& conversation, const AclMessage& message) {
-        std::expected<void, Error> ret = utils::safeCall([&]{ return conversation.handleReceivedMessage(message); });
+        std::expected<void, Error> ret = safeCall([&]{ return conversation.handleReceivedMessage(message); });
 
         if (not ret.has_value()) {      // remove conversation on error
             correspondingAgent->errorHandler.handle(ret.error());
