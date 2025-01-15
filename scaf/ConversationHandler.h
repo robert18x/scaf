@@ -22,10 +22,7 @@ template <typename _Agent>
 class ConversationHandler {
 public:
     explicit ConversationHandler(_Agent* correspondingAgent) : correspondingAgent(correspondingAgent) {
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<> distrib(0, std::numeric_limits<int>::max());
-        conversationIdGenerator = distrib(gen);
+        initConversationIdGenerator();
     }
 
 private:
@@ -73,8 +70,18 @@ private:
             removeConversation(uid);
     }
 
-    constexpr decltype(AclMessage::conversationId) generateConversationId() volatile {
+    decltype(AclMessage::conversationId) generateConversationId() volatile {
         return conversationIdGenerator++;
+    }
+
+    void initConversationIdGenerator() {
+        std::size_t agentNameHash = std::hash<std::string>{}(correspondingAgent->name);
+        std::random_device rd;
+        unsigned int randomValue = rd();
+        unsigned int seed = randomValue ^ static_cast<unsigned int>(agentNameHash);
+        std::mt19937 gen(seed);
+        std::uniform_int_distribution<> distrib(0, std::numeric_limits<int>::max());
+        conversationIdGenerator = distrib(gen);
     }
 
     SynchronizedMap<UniqueConversationId, std::shared_ptr<Conversation>> activeConversations;
