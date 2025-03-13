@@ -59,4 +59,17 @@ struct adl_serializer<std::optional<std::chrono::time_point<Clock, Duration>>> {
         }
     }
 };
+
+template <typename Rep, typename Period>
+struct adl_serializer<std::chrono::duration<Rep, Period>> {
+    static void to_json(json& j, const std::chrono::duration<Rep, Period>& duration) {
+        j = duration.count();
+    }
+
+    static void from_json(const json& j, std::chrono::duration<Rep, Period>& duration) {
+        auto count = j.get<Rep>();
+        duration = std::chrono::duration<Rep, Period>(count);
+    }
+};
+
 }
