@@ -78,9 +78,9 @@ private:
         std::size_t agentNameHash = std::hash<std::string>{}(correspondingAgent->name);
         std::random_device rd;
         unsigned int randomValue = rd();
-        unsigned int seed = randomValue ^ static_cast<unsigned int>(agentNameHash);
+        std::size_t seed = agentNameHash + 0x517cc1b7u + (randomValue << 6) + (randomValue >> 2);
         std::mt19937 gen(seed);
-        std::uniform_int_distribution<> distrib(0, std::numeric_limits<int>::max());
+        std::uniform_int_distribution<uint64_t> distrib(0, std::numeric_limits<uint64_t>::max());
         conversationIdGenerator = distrib(gen);
     }
 
