@@ -37,6 +37,7 @@ public:
     virtual ~Agent() {
         finished = true;
         communicationHandler.stop();
+        listeningThread->detach();
     }
     Agent(const Agent&) = delete;
     Agent(Agent&&) = delete;
