@@ -35,9 +35,8 @@ public:
         , listeningThread(nullptr) {}
 
     virtual ~Agent() {
-        finished = true;
+        setFinished();
         communicationHandler.stop();
-        listeningThread->detach();
     }
     Agent(const Agent&) = delete;
     Agent(Agent&&) = delete;
@@ -63,8 +62,12 @@ public:
         listeningThread = std::make_unique<std::jthread>(listen);
     }
 
-    bool isFinished() volatile {
+    bool isFinished() {
         return finished;
+    }
+
+    void setFinished() {
+        return finished = true;
     }
 
     using AgentBehaviour = _Behaviour;
