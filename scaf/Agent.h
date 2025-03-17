@@ -67,7 +67,7 @@ public:
     }
 
     void setFinished() {
-        return finished = true;
+        finished = true;
     }
 
     using AgentBehaviour = _Behaviour;
