@@ -31,8 +31,7 @@ public:
         : name(name)
         , communicationHandler(std::move(communicationHandler))
         , errorHandler(std::move(errorHandler))
-        , conversationHandler(this)
-        , listeningThread(nullptr) {}
+        , conversationHandler(this) {}
 
     virtual ~Agent() {
         setFinished();
