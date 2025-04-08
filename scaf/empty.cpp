@@ -1,1 +1,1 @@
-void do_nothing() {}
+void do_nothing() {} // needed to create static library, which is better handled by conan
