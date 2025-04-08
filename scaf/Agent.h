@@ -55,11 +55,10 @@ public:
     }
 
     void startListening() {
-        auto listen = [&] {
-            while(not finished)
+        listeningThread = std::jthread([&](std::stop_token stoken) {
+            while(not finished and not stoken.stop_requested())
                 listenForMessage();
-        };
-        listeningThread = std::make_unique<std::jthread>(listen);
+        });
     }
 
     bool isFinished() {
@@ -105,7 +104,7 @@ protected:
     _CommunicationHandler communicationHandler;
     _ErrorHandler errorHandler;
     ConversationHandler<Agent> conversationHandler;
-    std::unique_ptr<std::jthread> listeningThread;
+    std::jthread listeningThread;
     std::atomic_bool finished = false;
 
 private:
