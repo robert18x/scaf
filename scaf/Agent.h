@@ -32,7 +32,7 @@ public:
         , conversationHandler(this) {}
 
     virtual ~Agent() {
-        setFinished();
+        finished = true;
         communicationHandler.stop();
     }
     Agent(const Agent&) = delete;
@@ -60,10 +60,6 @@ public:
 
     bool isFinished() {
         return finished;
-    }
-
-    void setFinished() {
-        finished = true;
     }
 
     using AgentBehaviour = _Behaviour;
