@@ -7,14 +7,12 @@
 #include "JsonSerializer.h"
 #include "Uid.h"
 
-#include <cassert>
 #include <concepts>
-#include <functional>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <thread>
 #include <type_traits>
+#include <utility>
 
 namespace scaf {  // Smart Contracting Agents Framework
 
